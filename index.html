@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yaswanth Varma - Portfolio</title>
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@300;600;900&family=Roboto:wght@300;400&display=swap");
+        
+        @property --_s {
+          syntax: "<number>";
+          initial-value: 0;
+          inherits: true;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: none; 
+        }
+        
+        body {
+            overflow: hidden;
+            background-color: #000;
+            --easing: linear(
+                0, 1.42406 3.67%, 1.65745 4.64%, 1.71709 5.111%, 1.74059 5.591%,
+                1.73313 5.971%, 1.70302 6.361%, 1.57154 7.201%, 0.68765 10.781%,
+                0.57364 11.621%, 0.53175 12.451%, 0.53598 12.831%, 0.55521 13.231%,
+                0.63817 14.071%, 1.19719 17.652%, 1.26945 18.492%, 1.2961 19.322%,
+                1.2935 19.702%, 1.28141 20.102%, 1.22906 20.942%, 0.87551 24.522%,
+                0.82972 25.363%, 0.81279 26.183%, 0.81425 26.563%, 0.8217 26.963%,
+                0.85499 27.813%, 1.07903 31.403%, 1.10761 32.233%, 1.11838 33.053%,
+                1.1128 33.833%, 1.0918 34.683%, 0.9501 38.274%, 0.93199 39.104%,
+                0.92516 39.914%, 0.92863 40.704%, 0.94188 41.554%, 1.0315 45.145%,
+                1.04288 45.965%, 1.04731 46.775%, 1.04586 47.455%, 1.03969 48.185%,
+                0.98337 51.745%, 0.97376 52.705%, 0.97009 53.635%, 0.97488 55.056%,
+                1.01049 58.616%, 1.0189 60.486%, 1.0159 61.926%, 0.99343 65.477%,
+                0.98806 67.337%, 0.98996 68.807%, 1.00408 72.327%, 1.00753 74.157%,
+                0.99524 81.008%, 1.00297 87.699%, 0.99812 94.579%, 1.00074
+            );
+        }
+
+        /* --- CUSTOM CURSOR CSS --- */
+        #custom-cursor {
+            position: fixed;
+            top: 0; left: 0;
+            width: 20px; height: 20px;
+            background-color: #fff;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            mix-blend-mode: difference;
+            transform: translate(-50%, -50%);
+            /* IMPORTANT: Removed Top/Left transitions. JS handles position for max smoothness. */
+            transition: width 0.3s ease, height 0.3s ease; 
+            will-change: transform, top, left;
+        }
+        
+        body.hovering #custom-cursor {
+            transform: translate(-50%, -50%) scale(2.5);
+        }
+
+        .title {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            margin-top: 50px;
+            color: #000;
+            z-index: 10;
+        }
+        
+        .title h3 {
+            font-family: "Montserrat", sans-serif;
+            font-size: 80px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            pointer-events: none; 
+        }
+        .title h3 span:nth-of-type(2) { font-weight: 400; }
+
+        ul {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0 4em;
+            list-style: none;
+            color: #000;
+            padding: 0;
+            margin: 0;
+            justify-content: center;
+            pointer-events: auto; 
+        }
+
+        ul li { position: relative; }
+        ul li:not(:last-child) { border-image: conic-gradient(currentColor 0 0) 0 1 0 0/calc(50% - 2px) 1em/2.5em; }
+
+        ul li a {
+            --h: .12em; 
+            display: flex;
+            gap: .15ch;
+            font: bold 40px monospace;
+            text-decoration: none;
+            text-transform: uppercase;
+            color: inherit;
+            padding-block: .2em;
+            transition: --_s 1.5s var(--easing);
+        }
+
+        ul li a span {
+            offset: shape(from .5ch, curve to calc(100% - .5ch) 50%
+                    with 30% calc(50% - var(--_s)*sibling-count()*var(--h))/
+                         70% calc(50% - var(--_s)*sibling-count()*var(--h))
+            ) calc(99.9%*(sibling-index() - 1)/(sibling-count() - 1));
+            pointer-events: none;
+            display: inline-block;
+        }
+
+        .interaction-hint {
+            position: absolute;
+            bottom: 40px;
+            left: 40px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: #888;
+            font-family: "Roboto", sans-serif;
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            z-index: 5;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+            opacity: 1;
+        }
+        .mouse {
+            width: 22px; height: 35px; border: 2px solid #888; border-radius: 12px; position: relative;
+        }
+        .mouse::before {
+            content: ""; width: 4px; height: 4px; background: #888;
+            position: absolute; left: 50%; transform: translateX(-50%); top: 7px;
+            border-radius: 50%; animation: mouse-scroll 1.5s infinite;
+        }
+        @keyframes mouse-scroll { 0% { opacity: 1; top: 7px; } 100% { opacity: 0; top: 20px; } }
+
+        /* --- RESPONSIVE BREAKPOINTS --- */
+        @media (max-width: 768px) {
+            .title { 
+                margin-top: 20px; 
+                width: 90%;
+                left: 5%;
+            }
+            .title h3 { 
+                font-size: 42px; 
+                flex-direction: column; 
+                gap: 0px; 
+                margin-bottom: 20px;
+            }
+            ul { 
+                gap: 1em; 
+                flex-direction: column; 
+                align-items: center;
+            }
+            ul li:not(:last-child) { border-image: none; }
+            ul li a { 
+                font-size: 22px; 
+                transition: none;
+            }
+            /* Disable elasticity on mobile */
+            ul li a span { offset: none !important; }
+
+            .interaction-hint { 
+                left: 50%; 
+                transform: translateX(-50%); 
+                bottom: 30px; 
+            }
+
+            /* Hide custom cursor on mobile */
+            #custom-cursor { display: none !important; }
+            * { cursor: auto !important; }
+        }
+
+        @media (max-width: 400px) {
+            .title h3 { font-size: 32px; }
+            ul li a { font-size: 18px; }
+        }
+    </style>
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js",
+            "jsm/": "https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/"
+        }
+    }
+    </script>
+</head>
+<body>
+    <div id="custom-cursor"></div>
+
+    <div class="interaction-hint" id="hint">
+        <div class="mouse"></div>
+        <span>Drag to Explore</span>
+    </div>
+
+    <div class="title">
+        <h3>
+            <span>Yaswanth.</span>
+            <span>VARMA</span>
+        </h3>
+        <ul>
+          <li><a href="#" class="hover-trigger"><span>A</span><span>b</span><span>o</span><span>u</span><span>t</span></a></li>
+          <li><a href="#" class="hover-trigger"><span>P</span><span>r</span><span>o</span><span>j</span><span>e</span><span>c</span><span>t</span><span>s</span></a></li>
+          <li><a href="#" class="hover-trigger"><span>C</span><span>o</span><span>n</span><span>t</span><span>a</span><span>c</span><span>t</span></a></li>
+        </ul>
+    </div>
+
+    <script type="module">
+        import * as THREE from "three";
+        import { OrbitControls } from "jsm/controls/OrbitControls.js";
+        import { OBJLoader } from "jsm/loaders/OBJLoader.js";
+
+        // --- CUSTOM CURSOR & IDLE LOGIC ---
+        const cursor = document.getElementById('custom-cursor');
+        let isMouseActive = true;
+        
+        // Idle Animation State
+        let idleTime = 0;
+        let currentCursorPos = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+
+        // Track Mouse
+        document.addEventListener('mousemove', (e) => {
+            isMouseActive = true;
+            
+            // Sync current position to mouse instantly
+            currentCursorPos.x = e.clientX;
+            currentCursorPos.y = e.clientY;
+            
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        });
+
+        document.addEventListener('mouseleave', () => { isMouseActive = false; });
+        document.addEventListener('mouseenter', () => { isMouseActive = true; });
+
+        // Hover Effect
+        const triggers = document.querySelectorAll('a');
+        triggers.forEach(trigger => {
+            trigger.addEventListener('mouseenter', () => document.body.classList.add('hovering'));
+            trigger.addEventListener('mouseleave', () => document.body.classList.remove('hovering'));
+        });
+        document.addEventListener('mousedown', () => cursor.style.transform = "translate(-50%, -50%) scale(0.8)");
+        document.addEventListener('mouseup', () => cursor.style.transform = "translate(-50%, -50%) scale(1)");
+
+        // --- NAVBAR LOGIC ---
+        const links = document.querySelectorAll('ul li a');
+        links.forEach(link => {
+            link.addEventListener('mousemove', (e) => {
+                if (window.innerWidth <= 768) return; 
+                const rect = link.getBoundingClientRect();
+                const centerY = rect.top + rect.height / 2;
+                const offset = (centerY - e.clientY) / (rect.height / 2); 
+                link.style.setProperty('--_s', offset.toFixed(3));
+                link.style.transition = 'none';
+            });
+            link.addEventListener('mouseleave', () => {
+                if (window.innerWidth <= 768) return;
+                link.style.setProperty('--_s', '0');
+                link.style.transition = ''; 
+            });
+        });
+
+        // --- THREE.JS SCENE ---
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, w / h, 0.1, 1000);
+        updateCameraPosition();
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setSize(w, h);
+        renderer.shadowMap.enabled = true;
+        renderer.setClearColor(0xffffff, 1);
+        document.body.appendChild(renderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.enableZoom = false;
+        controls.minPolarAngle = Math.PI / 3;
+        controls.maxPolarAngle = Math.PI / 2.2;
+
+        const hint = document.getElementById('hint');
+        controls.addEventListener('start', () => hint.style.opacity = '0');
+        controls.addEventListener('end', () => hint.style.opacity = '1');
+
+        // --- FLOOR SHADER ---
+        const vertexShader = `
+          varying vec2 vUv; varying vec3 vNormal; varying vec3 vPosition;
+          void main() { vUv = uv; vNormal = normalize(normalMatrix * normal); vPosition = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
+        `;
+        const fragmentShader = `
+          uniform float uTime; uniform float uCircleSpacing; uniform float uLineWidth; uniform float uSpeed; uniform float uFadeEdge; uniform vec3 uCameraPosition;
+          varying vec2 vUv; varying vec3 vNormal; varying vec3 vPosition;
+          void main() {
+            vec2 center = vec2(0.5, 0.5); float dist = distance(vUv, center);
+            float animatedDist = dist - uTime * uSpeed; float circle = mod(animatedDist, uCircleSpacing);
+            float distFromEdge = min(circle, uCircleSpacing - circle);
+            float aaWidth = length(vec2(dFdx(animatedDist), dFdy(animatedDist))) * 2.0;
+            float lineAlpha = 1.0 - smoothstep(uLineWidth - aaWidth, uLineWidth + aaWidth, distFromEdge);
+            vec3 baseColor = mix(vec3(1.0), vec3(0.0), lineAlpha);
+            vec3 normal = normalize(vNormal); vec3 viewDir = normalize(uCameraPosition - vPosition); vec3 lightDir = normalize(vec3(5.0, 10.0, 5.0));
+            float NdotL = max(dot(normal, lightDir), 0.0);
+            vec3 diffuse = baseColor * (0.5 + 0.5 * NdotL);
+            vec3 reflectDir = reflect(-lightDir, normal);
+            float spec = pow(max(dot(viewDir, reflectDir), 0.0), 64.0);
+            vec3 finalColor = diffuse + (vec3(1.0) * spec * 0.8) + (vec3(1.0) * pow(1.0 - max(dot(normal, viewDir), 0.0), 2.0) * 0.3);
+            gl_FragColor = vec4(finalColor, 1.0 - smoothstep(0.5 - uFadeEdge, 0.5, dist));
+          }
+        `;
+        const floorMaterial = new THREE.ShaderMaterial({
+            vertexShader, fragmentShader,
+            uniforms: { uTime: { value: 0.0 }, uCircleSpacing: { value: 0.06 }, uLineWidth: { value: 0.02 }, uSpeed: { value: 0.01 }, uFadeEdge: { value: 0.2 }, uCameraPosition: { value: new THREE.Vector3() }, },
+            transparent: true, side: THREE.DoubleSide
+        });
+        const floor = new THREE.Mesh(new THREE.CircleGeometry(20, 200), floorMaterial);
+        floor.rotation.x = -Math.PI / 2; floor.position.y = -1;
+        scene.add(floor);
+
+        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+        dirLight.position.set(5, 10, 5);
+        scene.add(dirLight);
+
+        // --- MODEL LOADING ---
+        const loader = new OBJLoader();
+        loader.load("https://cdn.jsdelivr.net/gh/danielyl123/person/person.obj", (object) => {
+            object.traverse(c => {
+                if (c.isMesh) c.material = new THREE.MeshStandardMaterial({ color: 0x888888, roughness: 0.7, metalness: 0.3 });
+            });
+            const box = new THREE.Box3().setFromObject(object);
+            const size = new THREE.Vector3(); box.getSize(size);
+            const scale = 4 / Math.max(size.x, size.y, size.z);
+            object.scale.set(scale, scale, scale);
+            const scaledBox = new THREE.Box3().setFromObject(object);
+            object.position.y = -1 - scaledBox.min.y;
+            object.rotation.y = Math.PI / 3;
+            scene.add(object);
+        });
+
+        function updateCameraPosition() {
+            if (window.innerWidth <= 768) {
+                camera.position.set(-7, -5, 20);
+            } else {
+                camera.position.set(-7, -5, 11);
+            }
+        }
+
+        // --- MAIN ANIMATION LOOP ---
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Floor & Camera Updates
+            floorMaterial.uniforms.uTime.value += 0.016; 
+            const camPos = new THREE.Vector3();
+            camera.getWorldPosition(camPos);
+            floorMaterial.uniforms.uCameraPosition.value.copy(camPos);
+
+            // --- SMOOTH "WANDER" IDLE ANIMATION ---
+            if (!isMouseActive && window.innerWidth > 768) {
+                // Increment time for sine waves
+                idleTime += 0.005; // Slow time = leisurely speed
+
+                // Locate the Text Area
+                const titleEl = document.querySelector('.title h3');
+                const rect = titleEl.getBoundingClientRect();
+                
+                // Define the center of the text area
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                
+                // Wander Radius
+                const radiusX = rect.width * 0.4;
+                const radiusY = rect.height * 0.8;
+
+                // Lissajous figure / Compound Sine Wave for organic look
+                // Combining two sines creates a non-repetitive "wandering" path
+                const targetX = centerX + Math.sin(idleTime * 1.7) * radiusX + Math.cos(idleTime * 0.5) * (radiusX * 0.5);
+                const targetY = centerY + Math.cos(idleTime * 1.3) * radiusY + Math.sin(idleTime * 0.9) * (radiusY * 0.5);
+
+                // Lerp towards the calculated sine-wave point for extra smoothness
+                // 0.05 lerp factor makes it drag slightly behind the math, smoothing it out
+                currentCursorPos.x += (targetX - currentCursorPos.x) * 0.05;
+                currentCursorPos.y += (targetY - currentCursorPos.y) * 0.05;
+
+                cursor.style.left = currentCursorPos.x + 'px';
+                cursor.style.top = currentCursorPos.y + 'px';
+            }
+
+            renderer.render(scene, camera);
+            controls.update();
+        }
+        animate();
+
+        window.addEventListener("resize", () => {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            updateCameraPosition();
+        });
+    </script>
+</body>
+</html>
