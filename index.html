@@ -52,7 +52,6 @@
             z-index: 9999;
             mix-blend-mode: difference;
             transform: translate(-50%, -50%);
-            /* IMPORTANT: Removed Top/Left transitions. JS handles position for max smoothness. */
             transition: width 0.3s ease, height 0.3s ease; 
             will-change: transform, top, left;
         }
@@ -65,7 +64,7 @@
             position: absolute;
             width: 100%;
             text-align: center;
-            margin-top: 50px;
+            top: 50px;
             color: #000;
             z-index: 10;
         }
@@ -78,7 +77,7 @@
             letter-spacing: 1px;
             display: flex;
             justify-content: center;
-            margin-bottom: 30px;
+            margin-bottom: 0;
             pointer-events: none; 
         }
         .title h3 span:nth-of-type(2) { font-weight: 400; }
@@ -90,7 +89,7 @@
             list-style: none;
             color: #000;
             padding: 0;
-            margin: 0;
+            margin-top: 30px;
             justify-content: center;
             pointer-events: auto; 
         }
@@ -146,46 +145,73 @@
         }
         @keyframes mouse-scroll { 0% { opacity: 1; top: 7px; } 100% { opacity: 0; top: 20px; } }
 
+        /* --- SUBTLE BADGE STYLES (Bottom Right) --- */
+        .badge-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 100px;
+            height: 100px;
+            z-index: 20;
+            pointer-events: auto;
+            
+            /* ADDED TRANSITION FOR THE WHOLE CONTAINER */
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        }
+
+        /* SCALE UP ON HOVER */
+        .badge-container:hover {
+            transform: scale(1.3);
+        }
+
+        .badge-container svg {
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+        }
+        .badge-container #blobClip {
+            transform-origin: center;
+            transition: transform 0.4s ease-out;
+        }
+        /* Internal Blob also scales slightly */
+        .badge-container:hover #blobClip {
+            transform: scale(1.1);
+        }
+        .badge-container .text-content {
+            font: 700 11px/1.2 system-ui, -apple-system, sans-serif;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            fill: #555; /* Subtle Grey */
+            transition: fill 0.5s ease;
+        }
+        .badge-container:hover .text-content {
+            fill: #fff;
+        }
+
         /* --- RESPONSIVE BREAKPOINTS --- */
         @media (max-width: 768px) {
-            .title { 
-                margin-top: 20px; 
-                width: 90%;
-                left: 5%;
-            }
-            .title h3 { 
-                font-size: 42px; 
-                flex-direction: column; 
-                gap: 0px; 
-                margin-bottom: 20px;
-            }
+            .title { top: 30px; }
+            .title h3 { font-size: 38px; flex-direction: column; gap: 0px; }
             ul { 
-                gap: 1em; 
-                flex-direction: column; 
-                align-items: center;
+                position: fixed; bottom: 40px; width: 100%; left: 0; margin: 0;
+                gap: 1.5em; flex-direction: row; justify-content: center; z-index: 20;
             }
             ul li:not(:last-child) { border-image: none; }
             ul li a { 
-                font-size: 22px; 
-                transition: none;
+                font-size: 16px; transition: none; padding: 10px;
+                background: rgba(255,255,255,0.5); backdrop-filter: blur(5px); border-radius: 5px;
             }
-            /* Disable elasticity on mobile */
             ul li a span { offset: none !important; }
-
-            .interaction-hint { 
-                left: 50%; 
-                transform: translateX(-50%); 
-                bottom: 30px; 
-            }
-
-            /* Hide custom cursor on mobile */
+            .interaction-hint { display: none; }
             #custom-cursor { display: none !important; }
             * { cursor: auto !important; }
-        }
 
-        @media (max-width: 400px) {
-            .title h3 { font-size: 32px; }
-            ul li a { font-size: 18px; }
+            .badge-container {
+                width: 70px;
+                height: 70px;
+                bottom: 100px;
+                right: 15px;
+            }
         }
     </style>
     <script type="importmap">
@@ -205,6 +231,30 @@
         <span>Drag to Explore</span>
     </div>
 
+    <div class="badge-container">
+        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <clipPath id="blobClip">
+                    <path d="M43.1,-68.5C56.2,-58.6,67.5,-47.3,72.3,-33.9C77.2,-20.5,75.5,-4.9,74.2,11.3C72.9,27.6,71.9,44.5,63.8,57.2C55.7,69.8,40.6,78.2,25.5,79.2C10.4,80.1,-4.7,73.6,-20.9,69.6C-37.1,65.5,-54.5,63.9,-66,54.8C-77.5,45.8,-83.2,29.3,-85.7,12.3C-88.3,-4.8,-87.7,-22.3,-79.6,-34.8C-71.5,-47.3,-55.8,-54.9,-41.3,-64.2C-26.7,-73.6,-13.4,-84.7,0.8,-86C15,-87.2,29.9,-78.5,43.1,-68.5Z" transform="translate(100 100)"/>
+                </clipPath>
+            </defs>
+            <image href="img.jpeg" 
+                   width="200" height="200" 
+                   preserveAspectRatio="xMidYMid slice" 
+                   clip-path="url(#blobClip)" 
+                   style="filter: grayscale(100%); opacity: 0.8;" />
+            
+            <path id="textPathRing" d="M43.1,-68.5C56.2,-58.6,67.5,-47.3,72.3,-33.9C77.2,-20.5,75.5,-4.9,74.2,11.3C72.9,27.6,71.9,44.5,63.8,57.2C55.7,69.8,40.6,78.2,25.5,79.2C10.4,80.1,-4.7,73.6,-20.9,69.6C-37.1,65.5,-54.5,63.9,-66,54.8C-77.5,45.8,-83.2,29.3,-85.7,12.3C-88.3,-4.8,-87.7,-22.3,-79.6,-34.8C-71.5,-47.3,-55.8,-54.9,-41.3,-64.2C-26.7,-73.6,-13.4,-84.7,0.8,-86C15,-87.2,29.9,-78.5,43.1,-68.5Z" transform="translate(100 100)" fill="none" />
+            
+            <text class="text-content">
+                <textPath href="#textPathRing" startOffset="0%">
+                    ❤ MADE WITH LOVE ❤ MADE WITH LOVE ❤ MADE WITH LOVE ❤ MADE WITH LOVE ❤ MADE WITH LOVE ❤ MADE WITH LOVE
+                    <animate attributeName="startOffset" from="0%" to="-100%" dur="30s" repeatCount="indefinite" />
+                </textPath>
+            </text>
+        </svg>
+    </div>
+
     <div class="title">
         <h3>
             <span>Yaswanth.</span>
@@ -222,22 +272,16 @@
         import { OrbitControls } from "jsm/controls/OrbitControls.js";
         import { OBJLoader } from "jsm/loaders/OBJLoader.js";
 
-        // --- CUSTOM CURSOR & IDLE LOGIC ---
+        // --- CURSOR LOGIC ---
         const cursor = document.getElementById('custom-cursor');
         let isMouseActive = true;
-        
-        // Idle Animation State
         let idleTime = 0;
         let currentCursorPos = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
 
-        // Track Mouse
         document.addEventListener('mousemove', (e) => {
             isMouseActive = true;
-            
-            // Sync current position to mouse instantly
             currentCursorPos.x = e.clientX;
             currentCursorPos.y = e.clientY;
-            
             cursor.style.left = e.clientX + 'px';
             cursor.style.top = e.clientY + 'px';
         });
@@ -245,8 +289,7 @@
         document.addEventListener('mouseleave', () => { isMouseActive = false; });
         document.addEventListener('mouseenter', () => { isMouseActive = true; });
 
-        // Hover Effect
-        const triggers = document.querySelectorAll('a');
+        const triggers = document.querySelectorAll('a, .badge-container');
         triggers.forEach(trigger => {
             trigger.addEventListener('mouseenter', () => document.body.classList.add('hovering'));
             trigger.addEventListener('mouseleave', () => document.body.classList.remove('hovering'));
@@ -277,6 +320,7 @@
         const h = window.innerHeight;
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, w / h, 0.1, 1000);
+        
         updateCameraPosition();
 
         const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -352,7 +396,7 @@
 
         function updateCameraPosition() {
             if (window.innerWidth <= 768) {
-                camera.position.set(-7, -5, 20);
+                camera.position.set(-7, -2, 16);
             } else {
                 camera.position.set(-7, -5, 11);
             }
@@ -362,36 +406,24 @@
         function animate() {
             requestAnimationFrame(animate);
             
-            // Floor & Camera Updates
             floorMaterial.uniforms.uTime.value += 0.016; 
             const camPos = new THREE.Vector3();
             camera.getWorldPosition(camPos);
             floorMaterial.uniforms.uCameraPosition.value.copy(camPos);
 
-            // --- SMOOTH "WANDER" IDLE ANIMATION ---
+            // --- SMOOTH SINE WAVE IDLE ANIMATION ---
             if (!isMouseActive && window.innerWidth > 768) {
-                // Increment time for sine waves
-                idleTime += 0.005; // Slow time = leisurely speed
-
-                // Locate the Text Area
+                idleTime += 0.005;
                 const titleEl = document.querySelector('.title h3');
                 const rect = titleEl.getBoundingClientRect();
-                
-                // Define the center of the text area
                 const centerX = rect.left + rect.width / 2;
                 const centerY = rect.top + rect.height / 2;
-                
-                // Wander Radius
                 const radiusX = rect.width * 0.4;
                 const radiusY = rect.height * 0.8;
 
-                // Lissajous figure / Compound Sine Wave for organic look
-                // Combining two sines creates a non-repetitive "wandering" path
                 const targetX = centerX + Math.sin(idleTime * 1.7) * radiusX + Math.cos(idleTime * 0.5) * (radiusX * 0.5);
                 const targetY = centerY + Math.cos(idleTime * 1.3) * radiusY + Math.sin(idleTime * 0.9) * (radiusY * 0.5);
 
-                // Lerp towards the calculated sine-wave point for extra smoothness
-                // 0.05 lerp factor makes it drag slightly behind the math, smoothing it out
                 currentCursorPos.x += (targetX - currentCursorPos.x) * 0.05;
                 currentCursorPos.y += (targetY - currentCursorPos.y) * 0.05;
 
