@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yaswanth Varma - Portfolio</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/Draggable.min.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;600;900&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+    <link href="https://fonts.bunny.net/css?family=noto-sans-mono:400" rel="stylesheet" />
+
+    <style>
+        /* --- 1. CORE CONFIG --- */
+        @font-face {
+            font-family: 'PP Neue Montreal';
+            src: url('https://cdn.prod.website-files.com/6819ed8312518f61b84824df/6819ed8312518f61b84825ba_PPNeueMontreal-Medium.woff2') format('woff2');
+            font-weight: 500;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        /* Essential for the Slider Animation */
+        @property --slider-complete { initial-value: 0; inherits: true; syntax: '<integer>'; }
+        @property --slider-liquid { initial-value: 0; inherits: true; syntax: '<integer>'; }
+        @property --_s { syntax: "<number>"; initial-value: 0; inherits: true; }
+
+        :root {
+            --cta: rgb(94, 165, 0);
+            --f-size: clamp(2rem, 4vw + 1rem, 5rem);
+            --easing: linear(0, 1.42406 3.67%, 1.65745 4.64%, 1.71709 5.111%, 1.74059 5.591%, 1.73313 5.971%, 1.70302 6.361%, 1.57154 7.201%, 0.68765 10.781%, 0.57364 11.621%, 0.53175 12.451%, 0.53598 12.831%, 0.55521 13.231%, 0.63817 14.071%, 1.19719 17.652%, 1.26945 18.492%, 1.2961 19.322%, 1.2935 19.702%, 1.28141 20.102%, 1.22906 20.942%, 0.87551 24.522%, 0.82972 25.363%, 0.81279 26.183%, 0.81425 26.563%, 0.8217 26.963%, 0.85499 27.813%, 1.07903 31.403%, 1.10761 32.233%, 1.11838 33.053%, 1.1128 33.833%, 1.0918 34.683%, 0.9501 38.274%, 0.93199 39.104%, 0.92516 39.914%, 0.92863 40.704%, 0.94188 41.554%, 1.0315 45.145%, 1.04288 45.965%, 1.04731 46.775%, 1.04586 47.455%, 1.03969 48.185%, 0.98337 51.745%, 0.97376 52.705%, 0.97009 53.635%, 0.97488 55.056%, 1.01049 58.616%, 1.0189 60.486%, 1.0159 61.926%, 0.99343 65.477%, 0.98806 67.337%, 0.98996 68.807%, 1.00408 72.327%, 1.00753 74.157%, 0.99524 81.008%, 1.00297 87.699%, 0.99812 94.579%, 1.00074);
+            
+            /* Theme Variables controlled by JS */
+            --theme-lightness: 100%; 
+            --bg-color: hsl(0, 0%, var(--theme-lightness));
+            --text-color: hsl(0, 0%, calc(100% - var(--theme-lightness)));
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; cursor: none; }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow-x: hidden; 
+            font-family: 'Montserrat', sans-serif;
+            transition: background-color 0.1s linear, color 0.1s linear;
+        }
+
+        /* --- 2. LAYOUT STRUCTURE --- */
+        #canvas-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+            z-index: 0; pointer-events: auto;
+        }
+
+        .scroll-wrapper {
+            position: relative; z-index: 10; pointer-events: none;
+        }
+
+        .page-one {
+            height: 100vh; width: 100%; position: relative; pointer-events: none;
+        }
+
+        .page-one .title, .page-one .interaction-hint, .page-one ul { pointer-events: auto; }
+
+        ul {
+            display: flex; flex-wrap: wrap; gap: 0 4em; list-style: none;
+            color: inherit; padding: 0; margin-top: 30px; justify-content: center;
+        }
+        ul li { position: relative; }
+        ul li:not(:last-child) { border-image: conic-gradient(currentColor 0 0) 0 1 0 0/calc(50% - 2px) 1em/2.5em; }
+        
+        ul li a {
+            --h: .12em; display: flex; gap: .15ch; font: bold 40px monospace; 
+            text-decoration: none; text-transform: uppercase; color: inherit; 
+            padding-block: .2em; transition: --_s 1.5s var(--easing); cursor: none;
+        }
+        
+        ul li a span {
+            display: inline-block;
+            offset: shape(from .5ch, curve to calc(100% - .5ch) 50% with 30% calc(50% - var(--_s)*sibling-count()*var(--h))/ 70% calc(50% - var(--_s)*sibling-count()*var(--h)) ) calc(99.9%*(sibling-index() - 1)/(sibling-count() - 1));
+            pointer-events: none; 
+        }
+
+        .title {
+            position: absolute; width: 100%; text-align: center; top: 50px; color: inherit; z-index: 10;
+        }
+        .title h3 {
+            font-family: "Montserrat", sans-serif; font-size: 80px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 1px; display: flex; justify-content: center; margin-bottom: 0;
+        }
+        .title h3 span:nth-of-type(2) { font-weight: 400; }
+
+        .interaction-hint {
+            position: absolute; bottom: 40px; left: 40px; display: flex; align-items: center; gap: 15px;
+            color: #888; font-family: "Roboto", sans-serif; font-size: 12px; letter-spacing: 2px; text-transform: uppercase;
+            z-index: 5; transition: opacity 0.4s ease;
+        }
+        .mouse-icon { width: 22px; height: 35px; border: 2px solid #888; border-radius: 12px; position: relative; }
+        .mouse-icon::before {
+            content: ""; width: 4px; height: 4px; background: #888; position: absolute; left: 50%; transform: translateX(-50%); top: 7px;
+            border-radius: 50%; animation: mouse-scroll 1.5s infinite;
+        }
+        @keyframes mouse-scroll { 0% { opacity: 1; top: 7px; } 100% { opacity: 0; top: 20px; } }
+
+        .page-two {
+            min-height: 100vh; width: 100%; background-color: #0b0b0b; position: relative;
+            display: flex; justify-content: center; align-items: center; overflow: hidden;
+            box-shadow: 0px -20px 50px rgba(0,0,0,0.5); pointer-events: auto;
+        }
+        .scramble {
+            position: relative; display: flex; align-items: center; justify-content: center;
+            flex-wrap: wrap; gap: 1ch; font-family: 'Noto Sans Mono', monospace; z-index: 5;
+            color: #888; max-width: 80%; perspective: 500px;
+        }
+        .scramble > *:nth-child(1) { color: var(--cta); } 
+        .scramble > * { display: flex; align-items: center; gap: 0; }
+        .scramble > * > span { display: inline-block; position: relative; font-size: var(--f-size); }
+
+        /* --- LOADER --- */
+        .willem-header {
+            color: #201d1d; background-color: #f4f4f4; font-family: 'PP Neue Montreal', Arial, sans-serif;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100vh; z-index: 10000;
+            display: flex; justify-content: center; align-items: center; overflow: hidden; pointer-events: auto;
+        }
+        .willem-loader { display: flex; width: 100%; height: 100%; justify-content: center; align-items: center; position: absolute; top: 0; left: 0; }
+        .willem__h1 { white-space: nowrap; display: flex; justify-content: center; font-size: 12.5em; font-weight: 500; line-height: .75; position: relative; }
+        .willem__h1-start { display: flex; justify-content: flex-end; overflow: hidden; }
+        .willem__h1-end { display: flex; justify-content: flex-start; overflow: hidden; }
+        .willem__letter { display: block; position: relative; }
+        .willem-loader__box { display: flex; flex-flow: column; justify-content: center; align-items: center; width: 0; position: relative; }
+        .willem-loader__box-inner { display: flex; justify-content: center; align-items: center; min-width: 1em; height: 95%; position: relative; }
+        .willem__growing-image { display: flex; justify-content: center; align-items: center; width: 0%; height: 100%; position: absolute; overflow: hidden; }
+        .willem__growing-image-wrap { width: 100%; min-width: 1em; height: 100%; position: absolute; }
+        .willem__cover-image, .willem__cover-image-extra { pointer-events: none; object-fit: cover; width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
+        .willem__cover-image-extra.is--1 { z-index: 3; }
+        .willem__cover-image-extra.is--2 { z-index: 2; }
+        .willem__cover-image-extra.is--3 { z-index: 1; }
+        @media screen and (max-width: 991px) { .willem__h1 { font-size: 9em; } }
+        @media screen and (max-width: 767px) { .willem__h1 { font-size: 5.5em; } }
+
+        /* --- CURSOR & BADGE --- */
+        #custom-cursor {
+            position: fixed; top: 0; left: 0; width: 20px; height: 20px;
+            background-color: #fff; border-radius: 50%; pointer-events: none; z-index: 9999;
+            mix-blend-mode: difference; transform: translate(-50%, -50%) scale(1);
+            transition: transform 0.3s ease; will-change: transform, top, left;
+        }
+        body.hovering #custom-cursor { transform: translate(-50%, -50%) scale(2.5); }
+        body.clicking #custom-cursor { transform: translate(-50%, -50%) scale(0.8); }
+
+        .badge-container {
+            position: fixed; bottom: 20px; right: 20px; width: 100px; height: 100px; z-index: 20; pointer-events: auto;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .badge-container:hover { transform: scale(1.3); }
+        .badge-container svg { width: 100%; height: 100%; overflow: visible; }
+        .badge-container #blobClip { transform-origin: center; transition: transform 0.4s ease-out; }
+        .badge-container:hover #blobClip { transform: scale(1.1); }
+        .badge-container .text-content { font: 700 11px/1.2 system-ui; letter-spacing: 2px; text-transform: uppercase; fill: #555; transition: fill 0.5s ease; }
+        .badge-container:hover .text-content { fill: #fff; }
+
+        @media (max-width: 768px) {
+            .title { top: 30px; }
+            .title h3 { font-size: 38px; flex-direction: column; gap: 0px; }
+            ul { position: fixed; bottom: 40px; width: 100%; left: 0; margin: 0; gap: 1.5em; flex-direction: row; justify-content: center; z-index: 20; }
+            ul li:not(:last-child) { border-image: none; }
+            ul li a { font-size: 16px; transition: none; padding: 10px; background: rgba(255,255,255,0.5); backdrop-filter: blur(5px); border-radius: 5px; }
+            ul li a span { offset: none !important; }
+            .interaction-hint, #custom-cursor { display: none; }
+            * { cursor: auto !important; }
+            .badge-container { width: 70px; height: 70px; bottom: 100px; right: 15px; }
+        }
+
+        /* --- THEME SLIDER STYLES --- */
+        .theme-slider-container {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            pointer-events: auto;
+        }
+
+        /* Merged Slider CSS Layers */
+        .slider {
+            --width: 300;
+            --height: 2.625rem;
+            --checked: hsl(0 0% 100%);
+            --unchecked: hsl(218, 8%, 81%);
+            display: flex;
+            border-radius: 12px;
+            color: white;
+            width: calc(var(--width) * 1px);
+            max-width: calc(100vw - 2rem);
+            align-items: center;
+            position: relative;
+            container-type: inline-size;
+        }
+
+        .slider svg {
+            color: color-mix(in oklch, canvas, canvasText 30%);
+            position: absolute; pointer-events: none; width: 32px; aspect-ratio: 1; top: 50%; translate: 0 -50%;
+        }
+        .slider svg:nth-of-type(1) { right: calc(100% + 1.25rem); }
+        .slider svg:nth-of-type(2) { width: 56px; left: calc(100% + 1.25rem); }
+
+        [data-bounce='top'] svg:nth-of-type(2), [data-bounce='bottom'] svg:nth-of-type(1) { animation: bounce .32s cubic-bezier(.67,-0.45,.6,1.29); }
+        @keyframes bounce { 0%, 100% { scale: 1; } 50% { animation-timing-function: cubic-bezier(.64,1.01,.7,1.27); scale: 1.25; } }
+
+        .slider__track { flex: 1; height: calc(var(--height) * 1px); position: relative; container-type: inline-size; }
+        
+        .slider__fill {
+            height: 30%; border-radius: 12px; position: absolute; left: 0; width: 100%; top: 50%; translate: 0 -50%;
+            clip-path: inset(0 0 0 0 round 12px); pointer-events: none; background: color-mix(in oklch, canvas, canvasText 15%);
+        }
+        .slider__fill::after {
+            content: ''; width: 120%; height: 100%; position: absolute; left: 0; top: 0; background: var(--checked);
+            clip-path: inset(0 0 0 0 round 12px); translate: calc(var(--slider-complete) * 1cqi) 0%;
+            transition: translate 0.12s ease-out; transform: translateX(-100%);
+        }
+
+        .slider input { width: 100%; position: absolute; left: 50%; translate: -50% 0; opacity: 0; z-index: 99999; height: calc(var(--height) * 1px); cursor: -webkit-grab; }
+        .slider input:active { cursor: -webkit-grabbing; cursor: none; }
+
+        .knockout { height: 100%; width: 100%; border-radius: 100px; filter: url(#remove-black); position: absolute; inset: 0; transform: translate3d(0, 0, 0); }
+        
+        .indicator--masked { background: var(--checked); z-index: 12; height: 100%; width: 100%; translate: -50% -50%; container-type: inline-size; position: absolute; top: 50%; left: 50%; }
+        .slider .indicator--masked { background: #0000; }
+        
+        .indicator--masked .mask {
+            position: absolute; height: 100%; width: 62px; top: 50%; background: #000; left: 0; border-radius: 100px;
+            translate: calc((var(--slider-complete) / 100) * (100cqi - 100%)) -50%;
+            transition: height 0.2s, width 0.2s, scale 0.2s, translate 0.12s ease-out; will-change: height, width;
+        }
+
+        /* Liquid Blob Effect */
+        .indicator__liquid {
+            position: absolute; height: 100%; width: 62px; container-type: inline-size; top: 50%; background: #0000; left: 0; border-radius: 100px;
+            translate: calc(((var(--slider-complete) / 100) * (100cqi - 100%))) -50%;
+            transition: scale 0.2s ease-out, translate 0.12s ease-out;
+            box-shadow:inset 1px -1px 2px #ffffff80, inset 0 -1px 2px #ffffff80, inset -1px -1px 2px #ffffff80, inset 1px 1px 2px #4d4d4d80, inset -8px 4px 10px -6px #4d4d4d40, inset -1px 1px 6px #4d4d4d40, -1px -1px 8px #99999926, 1px 1px 2px #4d4d4d26, 2px 2px 6px #4d4d4d26, inset -2px -1px 2px #ffffff40, 3px 6px 16px -6px #4d4d4d80;
+        }
+
+        .liquids { position: absolute; inset: 0; transform: translate3d(0, 0, 0); border-radius: 100px; overflow: hidden; filter: url(#goo); }
+        .liquids--fill { z-index: 20; }
+        
+        .slider .liquids .liquid__shadow {
+            position: absolute; inset: 0; border-radius: 100px;
+            box-shadow: inset 0px 0px 3px 4px var(--checked), inset calc(((var(--slider-liquid) / 100) * 2px) + (2px - (var(--slider-liquid) / 100) * 4px)) 0px calc(2px + (var(--slider-liquid) / 100) * 1px) calc(1px + ((var(--slider-liquid) / 100) * 1px)) var(--checked);
+        }
+        .slider .liquids--fill .liquid__shadow { opacity: calc(var(--slider-liquid) / 50); }
+
+        .slider .liquid__track {
+            height: 100%; width: 100%; background: var(--checked); border-radius: 100px; position: absolute; top: 50%;
+            translate: calc(-100% + (var(--slider-liquid) / 100) * (100cqi)) -50%;
+            transition: translate 0.12s ease-out;
+        }
+        .liquids--track .liquid__track { translate: 8cqi -50%; background: color-mix(in oklch, canvas, canvasText 15%); }
+
+        /* Animation States */
+        .slider:active .indicator--masked .mask { scale: 1.35; }
+        .slider:active .indicator__liquid { scale: 1.35; }
+        .slider:active .indicator__liquid .liquid__track { left: 0; height: 12.5px; }
+
+        /* Utilities */
+        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0; }
+    </style>
+</head>
+<body>
+
+    <section class="willem-header">
+        <div class="willem-loader">
+            <div class="willem__h1">
+                <div class="willem__h1-start"><span class="willem__letter">V</span><span class="willem__letter">a</span><span class="willem__letter">r</span></div>
+                <div class="willem-loader__box">
+                    <div class="willem-loader__box-inner">
+                        <div class="willem__growing-image">
+                            <div class="willem__growing-image-wrap">
+                                <img class="willem__cover-image-extra is--1" src="delhi.JPG" alt=""><img class="willem__cover-image-extra is--2" src="myself.jpg" alt=""><img class="willem__cover-image-extra is--3" src="wanth.jpg" alt=""><img class="willem__cover-image" src="white1.png" alt="">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="willem__h1-end"><span class="willem__letter">m</span><span class="willem__letter">a.</span></div>
+            </div>
+        </div>
+    </section>
+
+    <div id="custom-cursor"></div>
+    <div id="canvas-container"></div>
+
+    <div class="scroll-wrapper">
+        <section class="page-one">
+            <div class="interaction-hint" id="hint">
+                <div class="mouse-icon"></div><span>Drag & Scroll</span>
+            </div>
+            <div class="title">
+                <h3><span>Yaswanth.</span><span>VARMA</span></h3>
+                <ul>
+                  <li><a href="#" class="hover-trigger"><span>A</span><span>b</span><span>o</span><span>u</span><span>t</span></a></li>
+                  <li><a href="projects.html" class="hover-trigger transition-link"><span>P</span><span>r</span><span>o</span><span>j</span><span>e</span><span>c</span><span>t</span><span>s</span></a></li>
+                  <li><a href="#" class="hover-trigger"><span>C</span><span>o</span><span>n</span><span>t</span><span>a</span><span>c</span><span>t</span></a></li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="page-two">
+            <section class="scramble">
+                <p aria-label="Nothing"><span aria-hidden="true">N</span><span aria-hidden="true">o</span><span aria-hidden="true">t</span><span aria-hidden="true">h</span><span aria-hidden="true">i</span><span aria-hidden="true">n</span><span aria-hidden="true">g</span></p>
+                <p aria-label="to"><span aria-hidden="true">t</span><span aria-hidden="true">o</span></p>
+                <p aria-label="see"><span aria-hidden="true">s</span><span aria-hidden="true">e</span><span aria-hidden="true">e</span></p>
+                <p aria-label="here"><span aria-hidden="true">h</span><span aria-hidden="true">e</span><span aria-hidden="true">r</span><span aria-hidden="true">e</span></p>
+                <p aria-label="yet"><span aria-hidden="true">y</span><span aria-hidden="true">e</span><span aria-hidden="true">t</span></p>
+            </section>
+        </section>
+    </div>
+
+    <div class="theme-slider-container">
+        <div class="slider">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="size-4">
+              <path d="M8 1a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 8 1ZM10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0ACZM12.95 4.11a.75.75 0 1 0-1.06-1.06l-1.062 1.06a.75.75 0 0 0 1.061 1.062l1.06-1.061ZM15 8a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1 0-1.5h1.5A.75.75 0 0 1 15 8ZM11.89 12.95a.75.75 0 0 0 1.06-1.06l-1.06-1.062a.75.75 0 0 0-1.062 1.061l1.061 1.06ZM8 12a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 8 12ZM5.172 11.89a.75.75 0 0 0-1.061-1.062L3.05 11.89a.75.75 0 1 0 1.06 1.06l1.06-1.06ZM4 8a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1 0-1.5h1.5A.75.75 0 0 1 4 8ZM4.11 5.172A.75.75 0 0 0 5.173 4.11L4.11 3.05a.75.75 0 1 0-1.06 1.06l1.06 1.06Z" />
+            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+              <path d="M12 2.25a.75.75 0 0 1 .75.75v2.25a.75.75 0 0 1-1.5 0V3a.75.75 0 0 1 .75-.75ZM7.5 12a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM18.894 6.166a.75.75 0 0 0-1.06-1.06l-1.591 1.59a.75.75 0 1 0 1.06 1.061l1.591-1.59ZM21.75 12a.75.75 0 0 1-.75.75h-2.25a.75.75 0 0 1 0-1.5H21a.75.75 0 0 1 .75.75ZM17.834 18.894a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 1 0-1.061 1.06l1.59 1.591ZM12 18a.75.75 0 0 1 .75.75V21a.75.75 0 0 1-1.5 0v-2.25A.75.75 0 0 1 12 18ZM7.758 17.303a.75.75 0 0 0-1.061-1.06l-1.591 1.59a.75.75 0 0 0 1.06 1.061l1.591-1.59ZM6 12a.75.75 0 0 1-.75.75H3a.75.75 0 0 1 0-1.5h2.25A.75.75 0 0 1 6 12ZM6.697 7.757a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 0 0-1.061 1.06l1.59 1.591Z" />
+            </svg>
+            <div class="knockout" style="touch-action: none;">
+              <div class="slider__fill"></div>
+              <div class="indicator indicator--masked">
+                <div class="mask"></div>
+              </div>
+            </div>
+            <div class="indicator__liquid">
+              <div class="shadow"></div>
+              <div class="wrapper">
+                <div class="liquids liquids--track">
+                  <div class="liquid__shadow"></div>
+                  <div class="liquid__track"></div>
+                </div>
+                <div class="liquids liquids--fill">
+                  <div class="liquid__shadow"></div>
+                  <div class="liquid__track"></div>
+                </div>
+              </div>
+              <div class="cover"></div>
+            </div>
+            <div class="slider__track">
+              <label for="slider" class="sr-only">Slider</label>
+              <input tabindex="0" type="range" id="slider" min="0" max="100" step="1" value="0" />
+            </div>
+        </div>
+        <svg class="sr-only" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <filter id="goo">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="13" result="blur" />
+                <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 13 -10" result="goo" />
+                <feComposite in="SourceGraphic" in2="goo" operator="atop" />
+              </filter>
+              <filter id="knockout" color-interpolation-filters="sRGB">
+                <feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  -1 -1 -1 1 0" />
+              </filter>
+              <filter id="remove-black" color-interpolation-filters="sRGB">
+                <feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  -255 -255 -255 0 1" result="black-pixels" />
+                <feMorphology in="black-pixels" operator="dilate" radius="0.5" result="smoothed" />
+                <feComposite in="SourceGraphic" in2="smoothed" operator="out" />
+              </filter>
+            </defs>
+        </svg>
+    </div>
+
+    <div class="badge-container">
+        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <defs><clipPath id="blobClip"><path d="M43.1,-68.5C56.2,-58.6,67.5,-47.3,72.3,-33.9C77.2,-20.5,75.5,-4.9,74.2,11.3C72.9,27.6,71.9,44.5,63.8,57.2C55.7,69.8,40.6,78.2,25.5,79.2C10.4,80.1,-4.7,73.6,-20.9,69.6C-37.1,65.5,-54.5,63.9,-66,54.8C-77.5,45.8,-83.2,29.3,-85.7,12.3C-88.3,-4.8,-87.7,-22.3,-79.6,-34.8C-71.5,-47.3,-55.8,-54.9,-41.3,-64.2C-26.7,-73.6,-13.4,-84.7,0.8,-86C15,-87.2,29.9,-78.5,43.1,-68.5Z" transform="translate(100 100)"/></clipPath></defs>
+            <image href="img.jpeg" width="200" height="200" preserveAspectRatio="xMidYMid slice" clip-path="url(#blobClip)" style="filter: grayscale(100%); opacity: 0.8;" />
+            <path id="textPathRing" d="M43.1,-68.5C56.2,-58.6,67.5,-47.3,72.3,-33.9C77.2,-20.5,75.5,-4.9,74.2,11.3C72.9,27.6,71.9,44.5,63.8,57.2C55.7,69.8,40.6,78.2,25.5,79.2C10.4,80.1,-4.7,73.6,-20.9,69.6C-37.1,65.5,-54.5,63.9,-66,54.8C-77.5,45.8,-83.2,29.3,-85.7,12.3C-88.3,-4.8,-87.7,-22.3,-79.6,-34.8C-71.5,-47.3,-55.8,-54.9,-41.3,-64.2C-26.7,-73.6,-13.4,-84.7,0.8,-86C15,-87.2,29.9,-78.5,43.1,-68.5Z" transform="translate(100 100)" fill="none" />
+            <text class="text-content"><textPath href="#textPathRing" startOffset="0%">❤ MADE WITH LOVE ❤ MADE WITH LOVE ❤ MADE WITH LOVE ❤ MADE WITH LOVE ❤ MADE WITH LOVE ❤ MADE WITH LOVE<animate attributeName="startOffset" from="0%" to="-100%" dur="30s" repeatCount="indefinite" /></textPath></text>
+        </svg>
+    </div>
+
+    <script>
+        // --- 1. LOADER ---
+        function initWillemLoadingAnimation() {
+            const tl = gsap.timeline({ defaults: { ease: "expo.inOut" } });
+            const loader = document.querySelector(".willem-header");
+            const letters = document.querySelectorAll(".willem__letter");
+            const box = document.querySelectorAll(".willem-loader__box");
+            const imageBox = document.querySelectorAll(".willem__growing-image");
+            const startTxt = document.querySelectorAll(".willem__h1-start");
+            const endTxt = document.querySelectorAll(".willem__h1-end");
+            const extraImages = document.querySelectorAll(".willem__cover-image-extra");
+
+            if (letters) tl.from(letters, { yPercent: 100, stagger: 0.025, duration: 1.25 });
+            if (box.length) tl.fromTo(box, { width: "0em" }, { width: "1em", duration: 1.25 }, "< 1.25");
+            if (imageBox.length) tl.fromTo(imageBox, { width: "0%" }, { width: "100%", duration: 1.25 }, "<");
+            if (startTxt.length) tl.fromTo(startTxt, { x: "0em" }, { x: "-0.05em", duration: 1.25 }, "<");
+            if (endTxt.length) tl.fromTo(endTxt, { x: "0em" }, { x: "0.05em", duration: 1.25 }, "<");
+            if (extraImages.length) tl.fromTo(extraImages, { opacity: 1 }, { opacity: 0, duration: 0.05, ease: "none", stagger: 0.5 }, "-=0.05");
+            if (imageBox.length && box.length) {
+                tl.to(imageBox, { width: "100vw", height: "100vh", duration: 1.5 }, "< 1.25");
+                tl.to(box, { width: "100vw", duration: 1.5 }, "<");
+            }
+            tl.to(".willem-header", { opacity: 0, duration: 1, onComplete: () => { loader.style.display = "none"; } });
+        }
+        document.addEventListener('DOMContentLoaded', initWillemLoadingAnimation);
+
+        // --- 2. TEXT SCRAMBLE ---
+        document.addEventListener('DOMContentLoaded', () => {
+            gsap.registerPlugin(ScrollTrigger);
+            gsap.from(".scramble span", {
+                scrollTrigger: { trigger: ".page-two", start: "top center", end: "center 45%", scrub: 1 },
+                y: (i) => Math.sin(i) * 150 + (Math.random() - 0.5) * 100,
+                x: (i) => (Math.random() - 0.5) * 100,
+                z: (i) => Math.random() * 300,
+                rotation: (i) => Math.random() * 90 - 45,
+                opacity: 0, duration: 1, ease: "power2.out", stagger: 0.02
+            });
+        });
+
+        // --- 3. CURSOR & INTERACTION ---
+        const cursor = document.getElementById('custom-cursor');
+        let isMouseActive = true;
+        let idleTime = 0;
+        let currentCursorPos = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+
+        document.addEventListener('mousemove', (e) => {
+            isMouseActive = true;
+            currentCursorPos.x = e.clientX;
+            currentCursorPos.y = e.clientY;
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        });
+        document.addEventListener('mouseleave', () => isMouseActive = false);
+        document.addEventListener('mouseenter', () => isMouseActive = true);
+        
+        document.addEventListener('mousedown', () => document.body.classList.add('clicking'));
+        document.addEventListener('mouseup', () => document.body.classList.remove('clicking'));
+
+        const triggers = document.querySelectorAll('a, .badge-container');
+        triggers.forEach(trigger => {
+            trigger.addEventListener('mouseenter', () => { document.body.classList.add('hovering'); });
+            trigger.addEventListener('mouseleave', () => { document.body.classList.remove('hovering'); });
+        });
+
+        // --- LINK HOVER LOGIC (ELASTICITY) ---
+        const links = document.querySelectorAll('ul li a');
+        links.forEach(link => {
+            link.addEventListener('mousemove', (e) => {
+                if (window.innerWidth <= 768) return; 
+                const rect = link.getBoundingClientRect();
+                const centerY = rect.top + rect.height / 2;
+                const offset = (centerY - e.clientY) / (rect.height / 2); 
+                link.style.setProperty('--_s', offset.toFixed(3));
+                link.style.transition = 'none'; 
+            });
+            link.addEventListener('mouseleave', () => {
+                if (window.innerWidth <= 768) return;
+                link.style.setProperty('--_s', '0');
+                link.style.transition = ''; 
+            });
+        });
+
+        // --- 4. THEME SLIDER LOGIC ---
+        document.addEventListener('DOMContentLoaded', () => {
+            gsap.registerPlugin(Draggable);
+            const slider = document.querySelector('.slider');
+            const input = slider.querySelector('[type=range]');
+            
+            const syncDelta = (e) => {
+                slider.dataset.sliding = true;
+                slider.style.setProperty('--delta', Math.min(Math.abs(e.movementX), 5));
+            };
+            const deSyncDelta = () => {
+                slider.style.setProperty('--delta', 0);
+                slider.dataset.sliding = false;
+                document.body.removeEventListener('pointermove', syncDelta);
+                document.body.removeEventListener('pointerup', deSyncDelta);
+            };
+
+            input.addEventListener('pointerdown', () => {
+                document.body.addEventListener('pointermove', syncDelta);
+                document.body.addEventListener('pointerup', deSyncDelta);
+            });
+
+            // Bounce Animation on limits
+            input.addEventListener('input', async () => {
+                const existingBounce = slider.getAnimations({subtree: true}).find(a => a.animationName === 'bounce');
+                if (input.value === input.max && !existingBounce) {
+                    slider.dataset.bounce = 'top';
+                    await slider.getAnimations({subtree: true}).find(a => a.animationName === 'bounce').finished;
+                    delete slider.dataset.bounce;
+                } else if (input.value === input.min && !existingBounce) {
+                    slider.dataset.bounce = 'bottom';
+                    await slider.getAnimations({subtree: true}).find(a => a.animationName === 'bounce').finished;
+                    delete slider.dataset.bounce;
+                }
+            });
+
+            // Liquid & Theme Logic
+            const sync = () => {
+                const val = (input.value - input.min) / (input.max - input.min);
+                const percentComplete = val * 100;
+                
+                // Liquid deformation math
+                let liquidValue;
+                if (percentComplete <= 10) liquidValue = (percentComplete / 10) * 50;
+                else if (percentComplete <= 80) liquidValue = 50;
+                else liquidValue = 50 + ((percentComplete - 80) / 20) * 50;
+                
+                slider.style.setProperty('--slider-complete', Math.round(percentComplete));
+                slider.style.setProperty('--slider-liquid', Math.round(liquidValue));
+
+                // --- THEME CONVERSION LOGIC ---
+                // Map slider (0 to 100) to Lightness (100% to 0%)
+                const lightness = 100 - percentComplete;
+                document.documentElement.style.setProperty('--theme-lightness', `${lightness}%`);
+            };
+
+            input.addEventListener('input', sync);
+            // Handle clicking directly on track
+            input.addEventListener('pointerdown', ({ clientX, clientY }) => {
+                const { left, width } = input.getBoundingClientRect();
+                const ratio = (clientX - left) / width;
+                const range = input.max - input.min;
+                input.value = parseInt(input.min) + Math.floor(range * ratio);
+                sync();
+            });
+            sync(); // Init
+        });
+    </script>
+
+    <script type="module">
+        import * as THREE from "three";
+        import { OrbitControls } from "jsm/controls/OrbitControls.js";
+        import { OBJLoader } from "jsm/loaders/OBJLoader.js";
+
+        // --- THREE.JS SCENE ---
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, w / h, 0.1, 1000);
+        updateCameraPosition();
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setSize(w, h);
+        renderer.shadowMap.enabled = true;
+        renderer.setClearColor(0x000000, 0); // Transparent background
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.enableZoom = false;
+        controls.enablePan = false;
+        controls.minPolarAngle = Math.PI / 3;
+        controls.maxPolarAngle = Math.PI / 2.2;
+
+        const hint = document.getElementById('hint');
+        controls.addEventListener('start', () => { if(hint) hint.style.opacity = '0'; });
+        controls.addEventListener('end', () => { if(hint) hint.style.opacity = '1'; });
+
+        // --- FLOOR SHADER ---
+        const vertexShader = `varying vec2 vUv; varying vec3 vNormal; varying vec3 vPosition; void main() { vUv = uv; vNormal = normalize(normalMatrix * normal); vPosition = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
+        const fragmentShader = `
+          uniform float uTime; uniform float uCircleSpacing; uniform float uLineWidth; uniform float uSpeed; uniform float uFadeEdge; uniform vec3 uCameraPosition;
+          varying vec2 vUv; varying vec3 vNormal; varying vec3 vPosition;
+          void main() {
+            vec2 center = vec2(0.5, 0.5); float dist = distance(vUv, center);
+            float animatedDist = dist - uTime * uSpeed; float circle = mod(animatedDist, uCircleSpacing);
+            float distFromEdge = min(circle, uCircleSpacing - circle);
+            float aaWidth = length(vec2(dFdx(animatedDist), dFdy(animatedDist))) * 2.0;
+            float lineAlpha = 1.0 - smoothstep(uLineWidth - aaWidth, uLineWidth + aaWidth, distFromEdge);
+            vec3 baseColor = mix(vec3(0.2), vec3(1.0), 1.0 - lineAlpha); 
+            vec3 normal = normalize(vNormal); 
+            vec3 viewDir = normalize(uCameraPosition - vPosition); 
+            vec3 lightDir = normalize(vec3(5.0, 10.0, 5.0));
+            float NdotL = max(dot(normal, lightDir), 0.0);
+            vec3 diffuse = baseColor * (0.5 + 0.5 * NdotL);
+            vec3 reflectDir = reflect(-lightDir, normal);
+            float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0); 
+            float fresnel = pow(1.0 - max(dot(normal, viewDir), 0.0), 3.0);
+            vec3 finalColor = diffuse + (vec3(0.6) * spec) + (vec3(0.2) * fresnel);
+            gl_FragColor = vec4(finalColor, 1.0 - smoothstep(0.5 - uFadeEdge, 0.5, dist));
+          }
+        `;
+        const floorMaterial = new THREE.ShaderMaterial({
+            vertexShader, fragmentShader,
+            uniforms: { uTime: { value: 0.0 }, uCircleSpacing: { value: 0.06 }, uLineWidth: { value: 0.02 }, uSpeed: { value: 0.01 }, uFadeEdge: { value: 0.2 }, uCameraPosition: { value: new THREE.Vector3() }, },
+            transparent: true, side: THREE.DoubleSide
+        });
+        const floor = new THREE.Mesh(new THREE.CircleGeometry(20, 200), floorMaterial);
+        floor.rotation.x = -Math.PI / 2; floor.position.y = -1;
+        scene.add(floor);
+
+        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+        dirLight.position.set(5, 10, 5);
+        scene.add(dirLight);
+
+        const loader = new OBJLoader();
+        loader.load("https://cdn.jsdelivr.net/gh/danielyl123/person/person.obj", (object) => {
+            object.traverse(c => {
+                if (c.isMesh) c.material = new THREE.MeshStandardMaterial({ color: 0x888888, roughness: 0.7, metalness: 0.3 });
+            });
+            const box = new THREE.Box3().setFromObject(object);
+            const size = new THREE.Vector3(); box.getSize(size);
+            const scale = 4 / Math.max(size.x, size.y, size.z);
+            object.scale.set(scale, scale, scale);
+            const scaledBox = new THREE.Box3().setFromObject(object);
+            object.position.y = -1 - scaledBox.min.y;
+            object.rotation.y = Math.PI / 3;
+            scene.add(object);
+        });
+
+        function updateCameraPosition() {
+            if (window.innerWidth <= 768) {
+                camera.position.set(-7, -2, 16);
+            } else {
+                camera.position.set(-7, -5, 11);
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            floorMaterial.uniforms.uTime.value += 0.016; 
+            const camPos = new THREE.Vector3();
+            camera.getWorldPosition(camPos);
+            floorMaterial.uniforms.uCameraPosition.value.copy(camPos);
+
+            if (!isMouseActive && window.innerWidth > 768) {
+                idleTime = performance.now() * 0.001; 
+                const centerX = window.innerWidth / 2;
+                const centerY = window.innerHeight / 2;
+                const radiusX = 200;
+                const radiusY = 100;
+                const targetX = centerX + Math.sin(idleTime * 1.7) * radiusX + Math.cos(idleTime * 0.5) * (radiusX * 0.5);
+                const targetY = centerY + Math.cos(idleTime * 1.3) * radiusY + Math.sin(idleTime * 0.9) * (radiusY * 0.5);
+                currentCursorPos.x += (targetX - currentCursorPos.x) * 0.05;
+                currentCursorPos.y += (targetY - currentCursorPos.y) * 0.05;
+                cursor.style.left = currentCursorPos.x + 'px';
+                cursor.style.top = currentCursorPos.y + 'px';
+            }
+            renderer.render(scene, camera);
+            controls.update();
+        }
+        animate();
+
+        window.addEventListener("resize", () => {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            renderer.setSize(width, height);
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            updateCameraPosition();
+        });
+    </script>
+</body>
+</html>

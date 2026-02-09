@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Projects Slider</title>
+    <link href="https://fonts.googleapis.com/css2?family=Alumni+Sans+Pinstripe&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* --- Colors --- */
+            --color-black: #111111;
+            --color-light: #f4f4f4;
+            --color-dark: #1a1a1a;
+            --color-neutral-900: #111111;
+            --container-padding: 2rem;
+            
+            /* --- Animation --- */
+            --cubic-default: cubic-bezier(0.16, 1, 0.3, 1);
+            
+            /* --- Neumorphic Variables --- */
+            --height: 1;
+            --btn-light: rgba(255, 255, 255, 0.05); 
+            --btn-shadow: rgba(0, 0, 0, 0.2);
+            --btn-bg: #222; 
+        }
+
+        body {
+            background-color: var(--color-black);
+            color: var(--color-light);
+            font-size: 1vw;
+            margin: 0;
+            cursor: url("https://cdn.prod.website-files.com/6708f85ff3d3cba6aff436fb/671251b239d7aeb290a31ac5_cursor-default%402x.svg") 2 0, auto;
+        }
+
+        a, button, .tile.button {
+            cursor: url("https://cdn.prod.website-files.com/6708f85ff3d3cba6aff436fb/671251b212e6b71494aa67ff_cursor-pointer%402x.svg") 12 0, pointer;
+        }
+
+        /* --- CUSTOM DYNAMIC CURSOR --- */
+        .cursor {
+            z-index: 1000;
+            background-color: var(--color-light);
+            color: var(--color-black);
+            opacity: 0;
+            pointer-events: none;
+            border-radius: .25em;
+            padding: .5em 1em;
+            font-family: 'PP Neue Corp', Impact, sans-serif;
+            text-transform: uppercase;
+            font-weight: 700;
+            font-size: 1.15em;
+            line-height: 1;
+            transition: opacity .2s;
+            position: fixed;
+            inset: 0% auto auto 0%;
+            white-space: nowrap;
+        }
+        
+        /* --- VISIBILITY LOGIC FIX --- */
+        /* Only show cursor when hovering the ACTIVE slide */
+        body:has(.slider-slide.active:hover) .cursor { opacity: 1; }
+
+        /* --- FONTS --- */
+        @font-face {
+            font-family: 'PP Neue Corp';
+            src: url('https://cdn.prod.website-files.com/6717aac16c9ea22eeef1e79e/6717de2d56e40b921572d2d9_PPNeueCorp-TightUltrabold.woff2') format('woff2');
+            font-weight: 700;
+            font-style: normal;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'PP Neue Montreal';
+            src: url('https://cdn.prod.website-files.com/6819ed8312518f61b84824df/6819ed8312518f61b84825ba_PPNeueMontreal-Medium.woff2') format('woff2');
+            font-weight: 500;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        /* --- LAYOUT --- */
+        .cloneable {
+            padding: var(--container-padding);
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            display: flex;
+            position: relative;
+            font-size: 1.1vw;
+            overflow: hidden;
+        }
+
+        .overlay {
+            z-index: 2;
+            background-image: linear-gradient(90deg, var(--color-neutral-900) 85%, #0000);
+            justify-content: flex-start;
+            align-items: flex-start;
+            width: 37.5em;
+            height: 100%;
+            padding-left: 2em;
+            padding-top: 2em;
+            display: flex;
+            position: absolute;
+            inset: 0% auto 0% 0%;
+            pointer-events: none; 
+        }
+
+        .overlay-inner {
+            flex-flow: column;
+            justify-content: center;
+            align-items: flex-start;
+            height: 100%;
+            display: flex;
+            pointer-events: auto;
+            gap: 2.5rem;
+            margin-top: -2rem;
+        }
+
+        .page-header {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            font-family: 'PP Neue Corp', Impact, sans-serif;
+            text-transform: uppercase;
+            font-size: 2.5rem;
+            line-height: 1;
+            letter-spacing: 0.05em;
+            color: #fff;
+            opacity: 0.9;
+            pointer-events: auto;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        /* --- COUNTER STYLES --- */
+        .overlay-count-row {
+            grid-column-gap: .2em;
+            grid-row-gap: .2em;
+            flex-flow: row;
+            justify-content: flex-start;
+            align-items: center;
+            font-family: 'PP Neue Corp', Impact, sans-serif;
+            font-size: 5.625em;
+            font-weight: 700;
+            display: flex;
+        }
+        .count-column { height: 1em; overflow: hidden; position: relative; display: block; }
+        .count-heading { width: 2ch; font-size: 1em; line-height: 1; margin: 0; display: block; }
+        .count-row-divider { background-color: var(--color-light); width: 2px; height: .75em; transform: rotate(15deg); }
+
+        /* --- ABSTRACT SECTION --- */
+        .project-abstract {
+            font-family: "Alumni Sans Pinstripe", sans-serif;
+            font-size: clamp(1.2rem, 1.5vw, 1.8rem);
+            line-height: 1.3;
+            color: rgba(255, 255, 255, 0.8);
+            max-width: 25ch;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-left: 1px solid rgba(255, 255, 255, 0.2);
+            padding-left: 1rem;
+        }
+
+        /* --- BUTTONS --- */
+        .extra-links-row {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 0;
+        }
+
+        .tile {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 8rem; 
+            height: 4rem; 
+            border-radius: 1rem;
+            font-family: "Alumni Sans Pinstripe", sans-serif;
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            color: #fff;
+            background-color: var(--btn-bg);
+            text-decoration: none;
+        }
+
+        .tile:before, .tile:after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            border-radius: 1rem;
+            pointer-events: none;
+        }
+
+        .tile.button {
+            cursor: pointer;
+            box-shadow: var(--btn-shadow) 0.2rem 0.2rem 0.4rem;
+            transition: box-shadow 0.15s 0.15s ease-in;
+        }
+        .tile.button:before {
+            box-shadow: var(--btn-light) -0.2rem -0.2rem 0.4rem;
+            transition: box-shadow 0.15s 0.15s ease-in;
+        }
+
+        .tile.button > .tile {
+            width: 100%; height: 100%;
+            box-shadow: inset var(--btn-shadow) 0 0 0;
+            transition: box-shadow 0.15s ease-in;
+            background-color: var(--btn-bg);
+        }
+        .tile.button > .tile:before {
+            box-shadow: inset var(--btn-light) 0 0 0;
+            transition: box-shadow 0.15s ease-in;
+        }
+
+        .tile.button span {
+            transition: transform 0.3s ease-in-out;
+            font-weight: bold;
+            letter-spacing: 1px;
+            pointer-events: none;
+        }
+
+        .tile.button:hover {
+            box-shadow: var(--btn-shadow) 0 0 0;
+            transition: box-shadow 0.15s ease-out;
+        }
+        .tile.button:hover:before {
+            box-shadow: var(--btn-light) 0 0 0;
+            transition: box-shadow 0.15s ease-out;
+        }
+        .tile.button:hover > .tile {
+            box-shadow: inset rgba(0, 0, 0, 0.8) calc(0.25rem * var(--height)) calc(0.25rem * var(--height)) 0.6rem;
+            transition: box-shadow 0.15s 0.15s ease-out;
+        }
+        .tile.button:hover > .tile:before {
+            box-shadow: inset var(--btn-light) calc(-0.25rem * var(--height)) calc(-0.25rem * var(--height)) 0.6rem;
+            transition: box-shadow 0.15s 0.15s ease-out;
+        }
+        .tile.button:hover span { transform: translateY(0.1516rem); }
+
+        /* --- ARROWS --- */
+        .overlay-nav-row {
+            grid-column-gap: 2em;
+            grid-row-gap: 2em;
+            display: flex;
+        }
+
+        .nav-btn {
+            background-color: #0000;
+            color: #fff;
+            border: 1px solid #fff3;
+            border-radius: .4em;
+            justify-content: center;
+            align-items: center;
+            width: 4em;
+            height: 4em;
+            padding: 0;
+            display: flex;
+            position: relative;
+            font-size: inherit;
+            transition: transform 0.475s var(--cubic-default), opacity 0.475s var(--cubic-default);
+        }
+
+        .button-arrow { flex: none; width: 1em; height: .75em; }
+        .button-arrow.next { transform: rotate(180deg); }
+        .button-overlay { z-index: 2; position: absolute; inset: -1px; transition: transform 0.475s var(--cubic-default); }
+
+        .overlay-corner {
+            border-top: 1px solid var(--color-light);
+            border-left: 1px solid var(--color-light);
+            border-top-left-radius: .4em;
+            width: 1em;
+            height: 1em;
+            position: absolute;
+        }
+        .overlay-corner.top-right { inset: 0% 0% auto auto; transform: rotate(90deg); }
+        .overlay-corner.bottom-left { inset: auto auto 0% 0%; transform: rotate(-90deg); }
+        .overlay-corner.bottom-right { inset: auto 0% 0% auto; transform: rotate(180deg); }
+
+        .nav-btn:hover .button-overlay { transform: scale(1.4); }
+        .overlay-nav-row:hover:has(.nav-btn:hover) .nav-btn { opacity: 0.4; }
+        .nav-btn:hover { transform: scale(0.85); opacity: 1 !important; }
+
+        /* --- SLIDER STYLES --- */
+        .main {
+            z-index: 0;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            inset: 0%;
+            overflow: hidden;
+        }
+        .slider-wrap {
+            justify-content: flex-start;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            display: flex;
+        }
+        .slider-list {
+            flex-flow: row;
+            justify-content: flex-start;
+            align-items: stretch;
+            display: flex;
+            position: relative;
+        }
+        .slider-slide {
+            flex: none;
+            width: 42.5em;
+            height: 28em;
+            padding-left: 1.25em;
+            padding-right: 1.25em;
+            transition: opacity .4s;
+            position: relative;
+            
+            /* Logic: Non-active slides get pointer (to slide), Active gets none (custom cursor) */
+            cursor: pointer; 
+        }
+        .slider-slide.active {
+            cursor: none; 
+        }
+
+        [data-slider="slide"] { opacity: 0.2; }
+        [data-slider="slide"].active { opacity: 1; }
+        [data-slider="slide"].active .slide-caption { transition-delay: 0.3s; }
+        .slide-inner {
+            border-radius: .5em;
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            pointer-events: auto;
+        }
+        img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+        .slide-caption {
+            z-index: 2;
+            grid-column-gap: .4em;
+            grid-row-gap: .4em;
+            background-color: var(--color-light);
+            color: var(--color-dark);
+            white-space: nowrap;
+            border-radius: .25em;
+            justify-content: flex-start;
+            align-items: center;
+            padding: .4em .75em .4em .5em;
+            display: flex;
+            position: absolute;
+            top: 1.25em; left: 1.25em;
+            overflow: hidden;
+            transition: transform 0.525s var(--cubic-default), opacity 0.525s var(--cubic-default);
+            transition-delay: 0s;
+        }
+        .caption-dot { background-color: var(--color-dark); border-radius: 10em; flex: none; width: .5em; height: .5em; }
+        .caption { font-size: .75em; font-family: arial; margin: 0px; }
+        html:not(.wf-design-mode) .slide-caption { opacity: 0; transform: translate(-25%, 0px); }
+        html:not(.wf-design-mode) [data-slider="slide"].active .slide-caption { opacity: 1; transform: translate(0%, 0px); }
+    </style>
+</head>
+<body>
+
+<div class="cursor">
+    <p>Click to open website</p>
+</div>
+
+<section class="cloneable">
+    <div class="overlay">
+        <h1 class="page-header">My Projects</h1>
+
+        <div class="overlay-inner">
+            <div class="overlay-count-row">
+                <div class="count-column">
+                    <h2 data-slide-count="step" class="count-heading">01</h2>
+                </div>
+                <div class="count-row-divider"></div>
+                <div class="count-column">
+                    <h2 data-slide-count="total" class="count-heading">04</h2>
+                </div>
+            </div>
+
+            <div class="extra-links-row">
+                <a href="#" id="btn-view-source" class="tile button" target="_blank">
+                    <div class="tile"><span>View Source</span></div>
+                </a>
+            </div>
+
+            <div class="project-abstract">
+                <span id="abstract-text">Explorations in digital interface design. Minimalist layouts focusing on typography, motion, and user interaction.</span>
+            </div>
+
+            <div class="overlay-nav-row">
+                <button aria-label="previous slide" data-slider="button-prev" class="nav-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="100%" viewbox="0 0 17 12" fill="none" class="button-arrow">
+                        <path d="M6.28871 12L7.53907 10.9111L3.48697 6.77778H16.5V5.22222H3.48697L7.53907 1.08889L6.28871 0L0.5 6L6.28871 12Z" fill="currentColor"></path>
+                    </svg>
+                    <div class="button-overlay">
+                        <div class="overlay-corner"></div>
+                        <div class="overlay-corner top-right"></div>
+                        <div class="overlay-corner bottom-left"></div>
+                        <div class="overlay-corner bottom-right"></div>
+                    </div>
+                </button>
+                <button aria-label="next slide" data-slider="button-next" class="nav-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="100%" viewbox="0 0 17 12" fill="none" class="button-arrow next">
+                        <path d="M6.28871 12L7.53907 10.9111L3.48697 6.77778H16.5V5.22222H3.48697L7.53907 1.08889L6.28871 0L0.5 6L6.28871 12Z" fill="currentColor"></path>
+                    </svg>
+                    <div class="button-overlay">
+                        <div class="overlay-corner"></div>
+                        <div class="overlay-corner top-right"></div>
+                        <div class="overlay-corner bottom-left"></div>
+                        <div class="overlay-corner bottom-right"></div>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main">
+        <div class="slider-wrap">
+            <div data-slider="list" class="slider-list">
+                
+                <div data-slider="slide" class="slider-slide" 
+                     data-src-link="https://github.com/project/layout-001" 
+                     data-live-link="https://layout-001.live"
+                     data-abstract="Exploring negative space and typography in modern web interfaces. A study in minimalism."
+                     data-cursor="Click to open website">
+                    <div class="slide-inner">
+                        <img src="https://cdn.prod.website-files.com/674d847bf8e817966d307714/674d90f74ff2fe8b0b912b97_slide-1.avif" loading="lazy" sizes="(max-width: 479px) 100vw, 560px" alt="Abstract layout">
+                        <div class="slide-caption">
+                            <div class="caption-dot"></div>
+                            <p class="caption">Layout nº001</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div data-slider="slide" class="slider-slide"
+                     data-src-link="https://github.com/project/layout-002" 
+                     data-live-link="https://layout-002.live"
+                     data-abstract="Fluid animations and interactions designed to enhance user engagement without distraction."
+                     data-cursor="Click to open website">
+                    <div class="slide-inner">
+                        <img src="https://cdn.prod.website-files.com/674d847bf8e817966d307714/674d90f7cf52dd961b48a1e2_slide-2.avif" loading="lazy" alt="Abstract layout">
+                        <div class="slide-caption">
+                            <div class="caption-dot"></div>
+                            <p class="caption">Layout nº002</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div data-slider="slide" class="slider-slide"
+                     data-src-link="https://github.com/project/layout-003" 
+                     data-live-link="https://layout-003.live"
+                     data-abstract="Dark mode UI components with neumorphic elements and subtle depth perception."
+                     data-cursor="Click to open website">
+                    <div class="slide-inner">
+                        <img src="https://cdn.prod.website-files.com/674d847bf8e817966d307714/674d90f7f7cce73267703347_slide-3.avif" loading="lazy" sizes="(max-width: 479px) 100vw, 560px" alt="Abstract layout">
+                        <div class="slide-caption">
+                            <div class="caption-dot"></div>
+                            <p class="caption">Layout nº003</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div data-slider="slide" class="slider-slide"
+                     data-src-link="https://github.com/project/layout-004" 
+                     data-live-link="https://layout-004.live"
+                     data-abstract="Experimental grid systems challenging traditional web layout norms and structures."
+                     data-cursor="Click to open website">
+                    <div class="slide-inner">
+                        <img src="https://cdn.prod.website-files.com/674d847bf8e817966d307714/674d90f7ccfd203c82a46798_slide-4.avif" loading="lazy" sizes="(max-width: 479px) 100vw, 560px" alt="Abstract layout">
+                        <div class="slide-caption">
+                            <div class="caption-dot"></div>
+                            <p class="caption">Layout nº004</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Draggable.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", (event) => {
+    
+    // 1. DYNAMIC CURSOR LOGIC
+    let cursorItem = document.querySelector(".cursor");
+    let cursorParagraph = cursorItem.querySelector("p");
+    let targets = document.querySelectorAll("[data-cursor]");
+    let xOffset = 12; 
+    let yOffset = 12;
+    let lastText = '';
+    
+    gsap.set(cursorItem, {xPercent: xOffset, yPercent: yOffset});
+
+    let xTo = gsap.quickTo(cursorItem, "x", { ease: "power3", duration: 0.6 });
+    let yTo = gsap.quickTo(cursorItem, "y", { ease: "power3", duration: 0.6 });
+
+    window.addEventListener("mousemove", e => {
+        let cursorX = e.clientX;
+        let cursorY = e.clientY;
+        xTo(cursorX);
+        yTo(cursorY);
+    });
+
+    // 2. SLIDER LOGIC
+    if (typeof InertiaPlugin !== "undefined") {
+        gsap.registerPlugin(Draggable, InertiaPlugin);
+    } else {
+        gsap.registerPlugin(Draggable);
+    }
+
+    function initSlider(){
+        const wrapper = document.querySelector('[data-slider="list"]')
+        const slides = gsap.utils.toArray('[data-slider="slide"]');
+        const nextButton = document.querySelector('[data-slider="button-next"]')
+        const prevButton = document.querySelector('[data-slider="button-prev"]')
+        const totalElement = document.querySelector('[data-slide-count="total"]');
+        const stepElement = document.querySelector('[data-slide-count="step"]');
+        const stepsParent = stepElement.parentElement;
+        const btnSource = document.getElementById("btn-view-source");
+        const abstractText = document.getElementById("abstract-text");
+        
+        let activeElement;
+        const totalSlides = slides.length;
+
+        totalElement.textContent = totalSlides < 10 ? `0${totalSlides}` : totalSlides;
+        stepsParent.innerHTML = '';
+        slides.forEach((_, index) => {
+            const stepClone = stepElement.cloneNode(true);
+            stepClone.textContent = index + 1 < 10 ? `0${index + 1}` : index + 1;
+            stepsParent.appendChild(stepClone);
+        });
+        const allSteps = stepsParent.querySelectorAll('[data-slide-count="step"]');
+        
+        function updateContent(idx) {
+            const wrappedIndex = gsap.utils.wrap(0, totalSlides, idx);
+            const currentSlide = slides[wrappedIndex];
+            
+            // Update Source Link
+            const srcLink = currentSlide.getAttribute('data-src-link') || '#';
+            if(btnSource) btnSource.href = srcLink;
+
+            // Update Abstract
+            const abstract = currentSlide.getAttribute('data-abstract');
+            if(abstractText && abstract) {
+                gsap.to(abstractText, {opacity: 0, duration: 0.2, onComplete: () => {
+                    abstractText.textContent = abstract;
+                    gsap.to(abstractText, {opacity: 1, duration: 0.2});
+                }});
+            }
+        }
+
+        const loop = horizontalLoop(slides, {
+            paused: true, 
+            draggable: true, 
+            center: false,
+            onChange: (element, index) => { 
+                activeElement && activeElement.classList.remove("active");
+                const nextSibling = element.nextElementSibling || slides[0]; 
+                nextSibling.classList.add("active");
+                activeElement = nextSibling;
+
+                const activeIndex = (index + 1) % totalSlides;
+                gsap.to(allSteps, { y: `${-100 * activeIndex}%`, ease: "power3", duration: 0.45 });
+                updateContent(activeIndex);
+            }
+        });
+        
+        updateContent(1); 
+
+        // CLICK HANDLERS
+        slides.forEach((slide, i) => {
+            slide.addEventListener("click", (e) => {
+                if (slide.classList.contains("active")) {
+                    // It is active, open the live link
+                    const liveLink = slide.getAttribute('data-live-link');
+                    if (liveLink) {
+                        window.open(liveLink, '_blank');
+                    }
+                } else {
+                    // It is NOT active, slide to it
+                    loop.toIndex(i - 1, {ease:"power3", duration: 0.725});
+                }
+            });
+        });
+
+        nextButton.addEventListener("click", () => loop.next({ease:"power3", duration: 0.725}));
+        prevButton.addEventListener("click", () => loop.previous({ease:"power3", duration: 0.725}));
+    }
+
+    /* Helper Function: Horizontal Loop */
+    function horizontalLoop(items, config) {
+        let timeline;
+        items = gsap.utils.toArray(items);
+        config = config || {};
+        gsap.context(() => { 
+            let onChange = config.onChange,
+                lastIndex = 0,
+                tl = gsap.timeline({repeat: config.repeat, onUpdate: onChange && function() {
+                    let i = tl.closestIndex();
+                    if (lastIndex !== i) {
+                        lastIndex = i;
+                        onChange(items[i], i);
+                    }
+                }, paused: config.paused, defaults: {ease: "none"}, onReverseComplete: () => tl.totalTime(tl.rawTime() + tl.duration() * 100)}),
+                length = items.length,
+                startX = items[0].offsetLeft,
+                times = [],
+                widths = [],
+                spaceBefore = [],
+                xPercents = [],
+                curIndex = 0,
+                indexIsDirty = false,
+                center = config.center,
+                pixelsPerSecond = (config.speed || 1) * 100,
+                snap = config.snap === false ? v => v : gsap.utils.snap(config.snap || 1), 
+                timeOffset = 0,
+                container = center === true ? items[0].parentNode : gsap.utils.toArray(center)[0] || items[0].parentNode,
+                totalWidth,
+                getTotalWidth = () => items[length-1].offsetLeft + xPercents[length-1] / 100 * widths[length-1] - startX + spaceBefore[0] + items[length-1].offsetWidth * gsap.getProperty(items[length-1], "scaleX") + (parseFloat(config.paddingRight) || 0),
+                populateWidths = () => {
+                    let b1 = container.getBoundingClientRect(), b2;
+                    items.forEach((el, i) => {
+                        widths[i] = parseFloat(gsap.getProperty(el, "width", "px"));
+                        xPercents[i] = snap(parseFloat(gsap.getProperty(el, "x", "px")) / widths[i] * 100 + gsap.getProperty(el, "xPercent"));
+                        b2 = el.getBoundingClientRect();
+                        spaceBefore[i] = b2.left - (i ? b1.right : b1.left);
+                        b1 = b2;
+                    });
+                    gsap.set(items, { xPercent: i => xPercents[i] });
+                    totalWidth = getTotalWidth();
+                },
+                timeWrap,
+                populateOffsets = () => {
+                    timeOffset = center ? tl.duration() * (container.offsetWidth / 2) / totalWidth : 0;
+                    center && times.forEach((t, i) => {
+                        times[i] = timeWrap(tl.labels["label" + i] + tl.duration() * widths[i] / 2 / totalWidth - timeOffset);
+                    });
+                },
+                getClosest = (values, value, wrap) => {
+                    let i = values.length,
+                        closest = 1e10,
+                        index = 0, d;
+                    while (i--) {
+                        d = Math.abs(values[i] - value);
+                        if (d > wrap / 2) d = wrap - d;
+                        if (d < closest) {
+                            closest = d;
+                            index = i;
+                        }
+                    }
+                    return index;
+                },
+                populateTimeline = () => {
+                    let i, item, curX, distanceToStart, distanceToLoop;
+                    tl.clear();
+                    for (i = 0; i < length; i++) {
+                        item = items[i];
+                        curX = xPercents[i] / 100 * widths[i];
+                        distanceToStart = item.offsetLeft + curX - startX + spaceBefore[0];
+                        distanceToLoop = distanceToStart + widths[i] * gsap.getProperty(item, "scaleX");
+                        tl.to(item, {xPercent: snap((curX - distanceToLoop) / widths[i] * 100), duration: distanceToLoop / pixelsPerSecond}, 0)
+                        .fromTo(item, {xPercent: snap((curX - distanceToLoop + totalWidth) / widths[i] * 100)}, {xPercent: xPercents[i], duration: (curX - distanceToLoop + totalWidth - curX) / pixelsPerSecond, immediateRender: false}, distanceToLoop / pixelsPerSecond)
+                        .add("label" + i, distanceToStart / pixelsPerSecond);
+                        times[i] = distanceToStart / pixelsPerSecond;
+                    }
+                    timeWrap = gsap.utils.wrap(0, tl.duration());
+                },
+                refresh = (deep) => {
+                    let progress = tl.progress();
+                    tl.progress(0, true);
+                    populateWidths();
+                    deep && populateTimeline();
+                    populateOffsets();
+                    deep && tl.draggable ? tl.time(times[curIndex], true) : tl.progress(progress, true);
+                },
+                onResize = () => refresh(true),
+                proxy;
+                
+            gsap.set(items, {x: 0});
+            populateWidths();
+            populateTimeline();
+            populateOffsets();
+            window.addEventListener("resize", onResize);
+            
+            function toIndex(index, vars) {
+                vars = vars || {};
+                (Math.abs(index - curIndex) > length / 2) && (index += index > curIndex ? -length : length); 
+                let newIndex = gsap.utils.wrap(0, length, index),
+                    time = times[newIndex];
+                if (time > tl.time() !== index > curIndex && index !== curIndex) { 
+                    time += tl.duration() * (index > curIndex ? 1 : -1);
+                }
+                if (time < 0 || time > tl.duration()) {
+                    vars.modifiers = {time: timeWrap};
+                }
+                curIndex = newIndex;
+                vars.overwrite = true;
+                gsap.killTweensOf(proxy);    
+                return vars.duration === 0 ? tl.time(timeWrap(time)) : tl.tweenTo(time, vars);
+            }
+            
+            tl.toIndex = (index, vars) => toIndex(index, vars);
+            tl.closestIndex = setCurrent => {
+                let index = getClosest(times, tl.time(), tl.duration());
+                if (setCurrent) {
+                    curIndex = index;
+                    indexIsDirty = false;
+                }
+                return index;
+            };
+            tl.current = () => indexIsDirty ? tl.closestIndex(true) : curIndex;
+            tl.next = vars => toIndex(tl.current()+1, vars);
+            tl.previous = vars => toIndex(tl.current()-1, vars);
+            tl.times = times;
+            tl.progress(1, true).progress(0, true); 
+            
+            if (config.reversed) {
+                tl.vars.onReverseComplete();
+                tl.reverse();
+            }
+            
+            if (config.draggable && typeof(Draggable) === "function") {
+                proxy = document.createElement("div")
+                let wrap = gsap.utils.wrap(0, 1),
+                    ratio, startProgress, draggable, dragSnap, lastSnap, initChangeX, wasPlaying,
+                    align = () => tl.progress(wrap(startProgress + (draggable.startX - draggable.x) * ratio)),
+                    syncIndex = () => tl.closestIndex(true);
+                
+                draggable = Draggable.create(proxy, {
+                    trigger: items[0].parentNode,
+                    type: "x",
+                    onPressInit() {
+                        let x = this.x;
+                        gsap.killTweensOf(tl);
+                        wasPlaying = !tl.paused();
+                        tl.pause();
+                        startProgress = tl.progress();
+                        refresh();
+                        ratio = 1 / totalWidth;
+                        initChangeX = (startProgress / -ratio) - x;
+                        gsap.set(proxy, {x: startProgress / -ratio});
+                    },
+                    onDrag: align,
+                    onThrowUpdate: align,
+                    overshootTolerance: 0,
+                    inertia: true,
+                    snap(value) {
+                         if (Math.abs(startProgress / -ratio - this.x) < 10) return lastSnap + initChangeX;
+                         let time = -(value * ratio) * tl.duration(),
+                             wrappedTime = timeWrap(time),
+                             snapTime = times[getClosest(times, wrappedTime, tl.duration())],
+                             dif = snapTime - wrappedTime;
+                         Math.abs(dif) > tl.duration() / 2 && (dif += dif < 0 ? tl.duration() : -tl.duration());
+                         lastSnap = (time + dif) / tl.duration() / -ratio;
+                         return lastSnap;
+                    },
+                    onRelease() {
+                        syncIndex();
+                        draggable.isThrowing && (indexIsDirty = true);
+                        if (!draggable.isThrowing) {
+                            tl.toIndex(curIndex, {duration: 0.5, ease: "power3.out"});
+                        }
+                    },
+                    onThrowComplete: () => {
+                        syncIndex();
+                        wasPlaying && tl.play();
+                    }
+                })[0];
+                tl.draggable = draggable;
+            }
+            tl.closestIndex(true);
+            lastIndex = curIndex;
+            onChange && onChange(items[curIndex], curIndex);
+            timeline = tl;
+            return () => window.removeEventListener("resize", onResize); 
+        });
+        return timeline;
+    }
+    
+    initSlider()
+
+});
+</script>
+</body>
+</html>
