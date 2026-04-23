@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projects — Yaswanth Varma</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+    <link href="https://fonts.bunny.net/css?family=noto-sans-mono:400" rel="stylesheet"/>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --cta: #5ea500; --black: #000; --white: #fff; }
+
+        html, body {
+            background: var(--black);
+            color: var(--white);
+            font-family: 'Barlow Condensed', sans-serif;
+            overflow-x: hidden;
+            cursor: none;
+        }
+
+        /* CURSOR */
+        #cursor {
+            position: fixed; width: 10px; height: 10px;
+            background: var(--white); border-radius: 50%;
+            pointer-events: none; z-index: 99999;
+            transform: translate(-50%, -50%);
+            mix-blend-mode: difference;
+            transition: width 0.25s cubic-bezier(0.16,1,0.3,1), height 0.25s cubic-bezier(0.16,1,0.3,1);
+        }
+        body.hovering #cursor { width: 56px; height: 56px; }
+
+        /* CURTAIN */
+        .transition-curtain {
+            position: fixed; inset: 0; background: var(--white);
+            z-index: 99998; transform: scaleY(0);
+            transform-origin: bottom; pointer-events: none;
+        }
+
+        /* LOCATION BAR */
+        #location-bar {
+            position: fixed; bottom: 0; left: 0; right: 0; height: 34px;
+            background: var(--black); border-top: 1px solid #111;
+            display: flex; align-items: center; padding: 0 32px; gap: 36px;
+            z-index: 9000; font-family: 'Noto Sans Mono', monospace;
+            font-size: 10px; letter-spacing: 1.8px; text-transform: uppercase;
+            color: #444; pointer-events: none;
+        }
+        .lb-dot {
+            width: 6px; height: 6px; background: var(--cta);
+            border-radius: 50%; flex-shrink: 0;
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+        @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:0.25} }
+        .lb-city { color: #888; }
+        .lb-coords { margin-left: auto; color: #333; }
+
+        /* ====== HAMBURGER + SIDEBAR NAV ====== */
+        #nav-hamburger {
+            position: fixed; top: 16px; left: 24px;
+            width: 36px; height: 36px; z-index: 10001;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 5px; pointer-events: auto; cursor: none;
+            background: none; border: none; padding: 0;
+        }
+        #nav-hamburger span {
+            display: block; width: 22px; height: 1.5px; background: #fff;
+            transform-origin: center;
+            transition: transform 0.4s cubic-bezier(0.16,1,0.3,1), opacity 0.3s ease, width 0.3s ease;
+        }
+        #nav-hamburger.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+        #nav-hamburger.open span:nth-child(2) { opacity: 0; width: 0; }
+        #nav-hamburger.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+        #nav-backdrop {
+            position: fixed; inset: 0; background: rgba(0,0,0,0);
+            z-index: 9995; pointer-events: none; transition: background 0.5s ease;
+        }
+        #nav-backdrop.active { background: rgba(0,0,0,0.45); pointer-events: auto; }
+
+        #nav-sidebar {
+            position: fixed; top: 0; left: -100%;
+            width: min(320px, 85vw); height: 100vh;
+            background: #0a0a0a; z-index: 9996;
+            display: flex; flex-direction: column;
+            border-right: 1px solid #151515;
+            transition: left 0.65s cubic-bezier(0.16,1,0.3,1);
+            overflow: hidden;
+        }
+        #nav-sidebar.open { left: 0; }
+        #nav-sidebar .sidebar-head {
+            padding: 28px 28px 0;
+            display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+        }
+        #nav-sidebar .sidebar-logo {
+            font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 4px;
+            color: #fff; text-decoration: none; cursor: none;
+        }
+        #nav-sidebar .sidebar-logo em { font-style: normal; color: var(--cta); }
+        .ws-sentence {
+            flex: 1; display: flex; flex-direction: row; align-items: center;
+            padding: 0 28px; gap: 0.35em; overflow: hidden;
+        }
+        .ws-sentence h2 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(2rem, 5vw, 2.6rem); font-weight: 400;
+            color: #fff; white-space: nowrap; margin: 0; line-height: 1.2;
+        }
+        .ws-word-col {
+            flex: 1; height: 100%; overflow-y: scroll; scroll-snap-type: y mandatory;
+            scrollbar-width: none; display: flex; flex-direction: column;
+            mask-image: linear-gradient(to bottom, transparent 0%, black 28%, black 72%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 28%, black 72%, transparent 100%);
+        }
+        .ws-word-col::-webkit-scrollbar { display: none; }
+        .ws-word-spacer { flex-shrink: 0; height: 50%; }
+        .ws-word-item {
+            flex-shrink: 0; height: 3.2rem; scroll-snap-align: center;
+            display: flex; align-items: center;
+        }
+        .ws-word-item a {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(1.8rem, 4vw, 2.4rem); font-weight: 400;
+            color: #222; text-decoration: none; cursor: none;
+            line-height: 1; white-space: nowrap;
+            transition: color 0.3s ease; letter-spacing: 0.04em;
+        }
+        .ws-word-item.ws-active a { color: var(--cta); }
+        #nav-sidebar .sidebar-foot {
+            padding: 24px 28px; flex-shrink: 0;
+            border-top: 1px solid #111; display: flex; gap: 24px;
+        }
+        #nav-sidebar .sidebar-foot a {
+            font-family: 'Noto Sans Mono', monospace; font-size: 9px;
+            letter-spacing: 2px; text-transform: uppercase; color: #444;
+            text-decoration: none; cursor: none; transition: color 0.2s;
+        }
+        #nav-sidebar .sidebar-foot a:hover { color: var(--cta); }
+        .ws-tick {
+            position: absolute; left: 28px; top: 50%; transform: translateY(-50%);
+            width: 3px; height: 3px; border-radius: 50%;
+            background: var(--cta); box-shadow: 0 0 8px var(--cta); pointer-events: none;
+        }
+
+        /* HEADER */
+        header {
+            position: fixed; top: 0; left: 0; right: 0; height: 58px;
+            display: flex; align-items: center; justify-content: space-between;
+            /* 80px left padding clears the hamburger button (left:24px + 36px wide) */
+            padding: 0 40px 0 80px; z-index: 9990; border-bottom: 1px solid #111;
+            background: var(--black);
+        }
+        .header-logo {
+            font-family: 'Bebas Neue', sans-serif; font-size: 20px;
+            letter-spacing: 3px; color: var(--white); text-decoration: none;
+        }
+        .header-logo span { color: var(--cta); }
+        .header-back {
+            font-family: 'Noto Sans Mono', monospace; font-size: 10px;
+            letter-spacing: 2px; text-transform: uppercase; color: #555;
+            text-decoration: none; display: flex; align-items: center; gap: 8px;
+            transition: color 0.2s, gap 0.25s;
+        }
+        .header-back:hover { color: var(--white); gap: 14px; }
+        .back-arrow { display: inline-block; transition: transform 0.25s; }
+        .header-back:hover .back-arrow { transform: translateX(-4px); }
+
+        /* MAIN */
+        main { padding-top: 58px; padding-bottom: 34px; min-height: 100vh; }
+
+        /* PAGE TITLE */
+        .page-title {
+            padding: 52px 40px 24px; border-bottom: 1px solid #111;
+            display: flex; align-items: flex-end; justify-content: space-between;
+        }
+        .page-title h1 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(3.5rem, 8vw, 7rem); letter-spacing: 0.04em; line-height: 1;
+        }
+        .page-title .meta {
+            font-family: 'Noto Sans Mono', monospace; font-size: 10px;
+            letter-spacing: 2px; text-transform: uppercase; color: #333;
+            text-align: right; line-height: 1.9; padding-bottom: 6px;
+        }
+        .meta span { color: #555; display: block; }
+
+        /* PROJECTS LIST */
+        .projects-list { list-style: none; }
+        .project-item { border-bottom: 1px solid #111; }
+
+        .project-link {
+            display: grid;
+            grid-template-columns: 42px 1fr auto auto;
+            align-items: center; gap: 20px;
+            padding: 26px 40px;
+            text-decoration: none; color: var(--white);
+            transition: background 0.3s ease;
+        }
+        .project-link:hover { background: #060606; }
+
+        .project-num {
+            font-family: 'Noto Sans Mono', monospace;
+            font-size: 10px; color: #222; letter-spacing: 1px;
+        }
+
+        .project-info { min-width: 0; }
+        .project-name {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(2.2rem, 4.5vw, 4rem);
+            letter-spacing: 0.04em; line-height: 1; display: block;
+            transition: color 0.2s, transform 0.35s cubic-bezier(0.16,1,0.3,1);
+        }
+        .project-link:hover .project-name { color: var(--cta); transform: translateX(10px); }
+
+        .project-desc {
+            font-family: 'Roboto', sans-serif; font-size: 12px;
+            color: #2e2e2e; line-height: 1.55; margin-top: 6px;
+            max-width: 52ch; transition: color 0.2s;
+        }
+        .project-link:hover .project-desc { color: #555; }
+
+        .project-tags {
+            display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end;
+            opacity: 0; transform: translateX(8px);
+            transition: opacity 0.2s, transform 0.25s;
+        }
+        .project-link:hover .project-tags { opacity: 1; transform: translateX(0); }
+        .tag {
+            font-family: 'Noto Sans Mono', monospace; font-size: 9px;
+            letter-spacing: 1.5px; text-transform: uppercase;
+            color: #3a3a3a; border: 1px solid #1e1e1e; padding: 3px 8px;
+        }
+
+        .project-arrow {
+            font-size: 1.1rem; color: #222; flex-shrink: 0;
+            transition: transform 0.3s, color 0.2s;
+        }
+        .project-link:hover .project-arrow { transform: translateX(5px); color: var(--cta); }
+
+        /* HOVER IMAGE */
+        #preview-wrap {
+            position: fixed; top: 0; left: 0;
+            pointer-events: none; z-index: 800;
+            will-change: transform;
+        }
+        #preview-img {
+            display: block; width: 360px; height: 220px; object-fit: cover;
+            opacity: 0; transform: scale(0.92) rotate(-1.5deg);
+            transition: opacity 0.2s ease, transform 0.3s cubic-bezier(0.16,1,0.3,1);
+            border: 1px solid #1a1a1a;
+        }
+        #preview-img.visible { opacity: 1; transform: scale(1) rotate(0deg); }
+
+        /* LIST FOOTER */
+        .list-footer {
+            padding: 28px 40px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .list-footer .count {
+            font-family: 'Noto Sans Mono', monospace; font-size: 10px;
+            letter-spacing: 2px; text-transform: uppercase; color: #222;
+        }
+        .gh-link {
+            font-family: 'Noto Sans Mono', monospace; font-size: 10px;
+            letter-spacing: 2px; text-transform: uppercase; color: #333;
+            text-decoration: none; border-bottom: 1px solid #222; padding-bottom: 2px;
+            transition: color 0.2s, border-color 0.2s;
+        }
+        .gh-link:hover { color: var(--cta); border-color: var(--cta); }
+
+        /* RESPONSIVE */
+        @media (max-width: 700px) {
+            header { padding: 0 20px; }
+            .page-title { padding: 36px 20px 18px; flex-direction: column; align-items: flex-start; gap: 10px; }
+            .project-link { padding: 20px; grid-template-columns: 30px 1fr auto; gap: 12px; }
+            .project-tags { display: none; }
+            .list-footer { padding: 20px; }
+            #location-bar { gap: 16px; padding: 0 16px; font-size: 9px; }
+            .lb-coords { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="transition-curtain"></div>
+<div id="cursor"></div>
+
+<!-- HAMBURGER -->
+<button id="nav-hamburger" aria-label="Open navigation" aria-expanded="false">
+    <span></span><span></span><span></span>
+</button>
+<div id="nav-backdrop"></div>
+<aside id="nav-sidebar">
+    <div class="ws-tick"></div>
+    <div class="sidebar-head">
+        <a href="index.html" class="sidebar-logo">Y<em>.</em>VARMA</a>
+    </div>
+    <div class="ws-sentence">
+        <h2>Navigate —</h2>
+        <div class="ws-word-col" id="ws-col">
+            <div class="ws-word-spacer"></div>
+            <div class="ws-word-item" data-href="index.html">
+                <a href="index.html">Home.</a>
+            </div>
+            <div class="ws-word-item ws-active" data-href="projects.html">
+                <a href="projects.html">Projects.</a>
+            </div>
+            <div class="ws-word-item" data-href="contact.html">
+                <a href="contact.html">Contact.</a>
+            </div>
+            <div class="ws-word-item" data-href="https://github.com/Yaswanth-Varma-Sangaraju">
+                <a href="https://github.com/Yaswanth-Varma-Sangaraju" target="_blank">GitHub.</a>
+            </div>
+            <div class="ws-word-item" data-href="https://www.linkedin.com/in/yaswanthvarma07">
+                <a href="https://www.linkedin.com/in/yaswanthvarma07" target="_blank">LinkedIn.</a>
+            </div>
+            <div class="ws-word-spacer"></div>
+        </div>
+    </div>
+    <div class="sidebar-foot">
+        <a href="https://github.com/Yaswanth-Varma-Sangaraju" target="_blank">GitHub</a>
+        <a href="https://www.linkedin.com/in/yaswanthvarma07" target="_blank">LinkedIn</a>
+        <a href="contact.html">Contact</a>
+    </div>
+</aside>
+
+<div id="preview-wrap">
+    <img id="preview-img" src="" alt="" />
+</div>
+
+<div id="location-bar">
+    <div class="lb-dot"></div>
+    <span class="lb-city">HYDERABAD, IN</span>
+    <span class="lb-time">—</span>
+    <span class="lb-tz">GMT+5:30</span>
+    <span class="lb-coords">17.3850° N, 78.4867° E</span>
+</div>
+
+<header>
+    <a href="index.html" class="header-logo transition-link">Y<span>.</span>VARMA</a>
+    <a href="index.html" class="header-back transition-link">
+        <span class="back-arrow">←</span>&nbsp; Back to home
+    </a>
+</header>
+
+<main>
+    <div class="page-title">
+        <h1>Projects</h1>
+        <div class="meta">
+            <span>4 Selected works</span>
+            <span>2024 – 2025</span>
+        </div>
+    </div>
+
+    <ul class="projects-list">
+
+        <li class="project-item">
+            <a class="project-link"
+               href="https://github.com/Yaswanth-Varma-Sangaraju/steno"
+               target="_blank" rel="noopener"
+               data-preview="https://matlabsimulation.com/wp-content/uploads/2020/11/Steganography-Projects.png">
+                <span class="project-num">01</span>
+                <div class="project-info">
+                    <span class="project-name">Steno</span>
+                    <p class="project-desc">Steganographic encoder/decoder — hides secret messages invisibly inside images, all in-browser with zero data leaving your device.</p>
+                </div>
+                <div class="project-tags">
+                    <span class="tag">HTML</span>
+                    <span class="tag">Canvas</span>
+                    <span class="tag">Crypto</span>
+                </div>
+                <span class="project-arrow">→</span>
+            </a>
+        </li>
+
+        <li class="project-item">
+            <a class="project-link"
+               href="https://github.com/Yaswanth-Varma-Sangaraju/veri-fit"
+               target="_blank" rel="noopener"
+               
+                data-preview="https://imgmediagumlet.lbb.in/media/2018/10/5bb4d3f6fa65096b3e643ece_1538577398441.jpg">
+                <span class="project-num">02</span>
+                <div class="project-info">
+                    <span class="project-name">Veri-Fit</span>
+                    <p class="project-desc">CNN-powered counterfeit detector for clothing — point your camera at any outfit and the model tells you if it's authentic or fake, in real time.</p>
+                </div>
+                <div class="project-tags">
+                    <span class="tag">ML</span>
+                    <span class="tag">JavaScript</span>
+                    <span class="tag">TM</span>
+                </div>
+                <span class="project-arrow">→</span>
+            </a>
+        </li>
+
+        <li class="project-item">
+            <a class="project-link"
+               href="https://github.com/Yaswanth-Varma-Sangaraju/fintrack"
+               target="_blank" rel="noopener"
+               data-preview="https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=720&q=80&fit=crop&crop=center">
+                <span class="project-num">03</span>
+                <div class="project-info">
+                    <span class="project-name">FinTrack</span>
+                    <p class="project-desc">Personal finance tracker — log income, expenses and budgets with a clean dashboard, category breakdowns and spending insights.</p>
+                </div>
+                <div class="project-tags">
+                    <span class="tag">CSS</span>
+                    <span class="tag">JS</span>
+                    <span class="tag">Charts</span>
+                </div>
+                <span class="project-arrow">→</span>
+            </a>
+        </li>
+
+        <li class="project-item">
+            <a class="project-link"
+               href="https://github.com/Yaswanth-Varma-Sangaraju/v-farm"
+               target="_blank" rel="noopener"
+               data-preview="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=720&q=80&fit=crop&crop=center">
+                <span class="project-num">04</span>
+                <div class="project-info">
+                    <span class="project-name">V-Farm</span>
+                    <p class="project-desc">Smart farming web platform connecting farmers with resources, live market data and crop management tools — bridging agriculture and technology.</p>
+                </div>
+                <div class="project-tags">
+                    <span class="tag">HTML</span>
+                    <span class="tag">CSS</span>
+                    <span class="tag">AgriTech</span>
+                </div>
+                <span class="project-arrow">→</span>
+            </a>
+        </li>
+
+    </ul>
+
+    <div class="list-footer">
+        <span class="count">4 projects total</span>
+        <a href="https://github.com/Yaswanth-Varma-Sangaraju"
+           target="_blank" rel="noopener" class="gh-link">View all on GitHub ↗</a>
+    </div>
+</main>
+
+<script>
+/* CURSOR */
+const cursor = document.getElementById('cursor');
+document.addEventListener('mousemove', e => {
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top  = e.clientY + 'px';
+});
+document.querySelectorAll('a').forEach(a => {
+    a.addEventListener('mouseenter', () => document.body.classList.add('hovering'));
+    a.addEventListener('mouseleave', () => document.body.classList.remove('hovering'));
+});
+
+/* HOVER PREVIEW */
+const previewWrap = document.getElementById('preview-wrap');
+const previewImg  = document.getElementById('preview-img');
+let raf;
+
+document.querySelectorAll('.project-link').forEach(link => {
+    link.addEventListener('mouseenter', () => {
+        const src = link.dataset.preview;
+        if (!src) return;
+        if (previewImg.src !== src) previewImg.src = src;
+        previewImg.classList.add('visible');
+    });
+    link.addEventListener('mousemove', e => {
+        cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(() => {
+            let px = e.clientX + 32, py = e.clientY - 110;
+            if (px + 360 > window.innerWidth - 10) px = e.clientX - 392;
+            if (py < 66) py = 66;
+            if (py + 220 > window.innerHeight - 38) py = window.innerHeight - 258;
+            previewWrap.style.transform = `translate(${px}px,${py}px)`;
+        });
+    });
+    link.addEventListener('mouseleave', () => previewImg.classList.remove('visible'));
+});
+
+/* PAGE TRANSITION (internal links only) */
+const curtain = document.querySelector('.transition-curtain');
+document.querySelectorAll('a[href]').forEach(link => {
+    const href = link.getAttribute('href');
+    if (!href || href.startsWith('http') || href.startsWith('#') || link.target === '_blank') return;
+    link.addEventListener('click', e => {
+        e.preventDefault();
+        curtain.style.transition = 'transform 0.65s cubic-bezier(0.76,0,0.24,1)';
+        curtain.style.transform  = 'scaleY(1)';
+        setTimeout(() => { window.location.href = href; }, 640);
+    });
+});
+
+/* LOCATION BAR — live time in IST */
+(function () {
+    const timeEl = document.querySelector('#location-bar .lb-time');
+    if (!timeEl) return;
+    function tick() {
+        const now = new Date();
+        const ist = new Date(now.getTime() + now.getTimezoneOffset() * 60000 + 5.5 * 3600000);
+        const h = ist.getHours(), m = ist.getMinutes();
+        timeEl.textContent = `${h % 12 || 12}:${String(m).padStart(2,'0')} ${h >= 12 ? 'PM' : 'AM'}`;
+    }
+    tick(); setInterval(tick, 30000);
+})();
+
+/* STAGGER ENTRANCE */
+document.querySelectorAll('.project-item').forEach((el, i) => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(16px)';
+    el.style.transition = `opacity 0.5s ease ${0.08 + i * 0.08}s, transform 0.5s cubic-bezier(0.16,1,0.3,1) ${0.08 + i * 0.08}s`;
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+        el.style.opacity = '1';
+        el.style.transform = 'translateY(0)';
+    }));
+});
+/* SIDEBAR NAV */
+(function() {
+    const hamburger = document.getElementById('nav-hamburger');
+    const sidebar   = document.getElementById('nav-sidebar');
+    const backdrop  = document.getElementById('nav-backdrop');
+    const col       = document.getElementById('ws-col');
+    const items     = col ? [...col.querySelectorAll('.ws-word-item')] : [];
+
+    function openNav()  { sidebar.classList.add('open'); backdrop.classList.add('active'); hamburger.classList.add('open'); hamburger.setAttribute('aria-expanded','true'); }
+    function closeNav() { sidebar.classList.remove('open'); backdrop.classList.remove('active'); hamburger.classList.remove('open'); hamburger.setAttribute('aria-expanded','false'); }
+
+    hamburger.addEventListener('click', () => sidebar.classList.contains('open') ? closeNav() : openNav());
+    backdrop.addEventListener('click', closeNav);
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeNav(); });
+
+    if (col) {
+        col.style.setProperty('--count', items.length);
+        items.forEach((item, i) => item.style.setProperty('--i', i));
+        function updateActive() {
+            const center = col.scrollTop + col.clientHeight / 2;
+            let closest = 0, closestDist = Infinity;
+            items.forEach((item, i) => {
+                const mid = item.offsetTop + item.offsetHeight / 2;
+                const d = Math.abs(center - mid);
+                item.classList.remove('ws-active');
+                if (d < closestDist) { closestDist = d; closest = i; }
+            });
+            items[closest].classList.add('ws-active');
+        }
+        col.addEventListener('scroll', updateActive, { passive: true });
+        requestAnimationFrame(updateActive);
+    }
+
+    /* internal nav transitions */
+    document.querySelectorAll('#nav-sidebar a[href]').forEach(link => {
+        const href = link.getAttribute('href');
+        if (!href || href.startsWith('http') || href.startsWith('#') || link.target === '_blank') return;
+        link.addEventListener('click', e => {
+            e.preventDefault();
+            closeNav();
+            const curtain = document.querySelector('.transition-curtain');
+            curtain.style.transition = 'transform 0.65s cubic-bezier(0.76,0,0.24,1)';
+            curtain.style.transform = 'scaleY(1)';
+            setTimeout(() => { window.location.href = href; }, 640);
+        });
+    });
+})();
+
+</script>

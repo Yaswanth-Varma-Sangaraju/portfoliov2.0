@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+    <style>
+        /* --- FONTS --- */
+        @import url(https://fonts.googleapis.com/css?family=Raleway:300);
+        @import url(https://fonts.googleapis.com/css?family=Lusitana:400,700);
+
+        /* --- BASICS --- */
+        html, body {
+            height: 100%;
+            margin: 0;
+            font-family: 'Raleway', sans-serif;
+            background: #080808;
+        }
+        
+        body {
+            position: relative;
+            background-color: #080808;
+        }
+
+        /* --- GRID SYSTEM --- */
+        .row {
+            margin: -20px 0;
+        }
+        .row:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+        .col {
+            padding: 0 20px;
+            float: left;
+            box-sizing: border-box;
+        }
+        .col.x-50 { width: 50%; }
+        .col.x-100 { width: 100%; }
+
+        @media (max-width: 768px) {
+            .col.x-50 { width: 100%; }
+        }
+
+        .align-center { text-align: center; }
+
+        /* --- CONTACT SECTION --- */
+        .get-in-touch {
+            max-width: 650px;
+            margin: 0 auto;
+            position: relative;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 0 20px; /* Mobile padding */
+        }
+
+        .get-in-touch .title {
+            text-align: center;
+            font-family: Raleway, sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-size: 36px;
+            line-height: 48px;
+            padding-bottom: 48px;
+            margin: 0;
+            color: #fff;
+        }
+
+        /* --- FORM STYLES --- */
+        .contact-form .form-field {
+            position: relative;
+            margin: 32px 0;
+        }
+
+        .contact-form .input-text {
+            display: block;
+            width: 100%;
+            height: 36px;
+            border-width: 0 0 2px 0;
+            border-color: rgba(255,255,255,0.3);
+            font-family: Lusitana, serif;
+            font-size: 18px;
+            line-height: 26px;
+            font-weight: 400;
+            color: #fff;
+            background: transparent;
+            border-style: solid;
+            border-radius: 0;
+        }
+
+        .contact-form .input-text:focus {
+            outline: none;
+        }
+
+        /* Floating Label Logic */
+        .contact-form .input-text:focus + .label,
+        .contact-form .input-text.not-empty + .label {
+            transform: translateY(-24px);
+        }
+
+        .contact-form .label {
+            position: absolute;
+            left: 20px;
+            bottom: 11px;
+            font-family: Lusitana, serif;
+            font-size: 18px;
+            line-height: 26px;
+            font-weight: 400;
+            color: rgba(255,255,255,0.4);
+            cursor: text;
+            transition: transform .2s ease-in-out;
+            pointer-events: none;
+        }
+
+        .contact-form .submit-btn {
+            display: inline-block;
+            background-color: #fff;
+            color: #000;
+            font-family: Raleway, sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 16px;
+            line-height: 24px;
+            padding: 8px 16px;
+            border: none;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+        }
+
+        .contact-form .submit-btn:hover {
+            opacity: 0.8;
+        }
+
+        .contact-form .submit-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* --- SUCCESS MESSAGE --- */
+        #success-message {
+            display: none;
+            text-align: center;
+            font-family: Lusitana, serif;
+        }
+        #success-message h2 {
+            font-family: Raleway, sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: #fff;
+        }
+        #success-message p {
+            font-size: 18px;
+            color: rgba(255,255,255,0.55);
+            margin-bottom: 30px;
+        }
+        #success-message button {
+            background-color: transparent;
+            border: 1px solid rgba(255,255,255,0.4);
+            color: #fff;
+            padding: 8px 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+        }
+        #success-message button:hover {
+            background-color: #fff;
+            color: #000;
+        }
+    
+        /* ====== NEW ENHANCEMENTS ====== */
+
+        /* Back link removed — navigation handled by sidebar */
+
+        /* Page enter animation */
+        .get-in-touch {
+            animation: section-in 0.8s cubic-bezier(0.16,1,0.3,1) 0.1s both;
+        }
+        @keyframes section-in {
+            from { opacity: 0; transform: translateY(20px) translateY(-50%); }
+            to   { opacity: 1; transform: translateY(-50%); }
+        }
+
+        /* Input focus */
+        .contact-form .input-text:focus {
+            border-color: rgba(255,255,255,0.8);
+            outline: none;
+        }
+        .contact-form .input-text {
+            transition: border-color 0.3s ease;
+            caret-color: #5ea500;
+        }
+
+        /* Submit button shimmer */
+        .contact-form .submit-btn {
+            overflow: hidden;
+            position: relative;
+        }
+        .contact-form .submit-btn::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 60%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+            transition: left 0.5s ease;
+        }
+        .contact-form .submit-btn:hover::after { left: 150%; }
+
+        /* Character counter */
+        .char-counter {
+            position: absolute;
+            right: 0;
+            bottom: -20px;
+            font-family: Lusitana, serif;
+            font-size: 11px;
+            color: rgba(255,255,255,0.25);
+            transition: color 0.2s;
+        }
+        .char-counter.warning { color: #e55; }
+
+        /* Field validation indicator */
+        .form-field::after {
+            content: '';
+            position: absolute;
+            right: 0; bottom: 0;
+            width: 0%; height: 2px;
+            background: #5ea500;
+            transition: width 0.4s cubic-bezier(0.16,1,0.3,1);
+        }
+        .form-field.valid::after { width: 100%; }
+
+        /* Transition curtain */
+        .transition-curtain {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #0b0b0b; z-index: 99999;
+            transform: scaleY(0); transform-origin: bottom; pointer-events: none;
+        }
+
+        /* Title entrance */
+        .get-in-touch .title { overflow: hidden; }
+
+        /* ====== SHAPES BACKGROUND — full screen, fully interactive ====== */
+        #shapes-bg {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: block;
+            z-index: 0;
+            /* pointer-events ON so hover/click wave works everywhere */
+        }
+
+        /* ====== GLASSMORPHIC FORM CARD ====== */
+        .get-in-touch {
+            position: relative;
+            z-index: 1;
+            max-width: 650px;
+            margin: 0 auto;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 52px 48px;
+            background: rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(24px) saturate(1.4);
+            -webkit-backdrop-filter: blur(24px) saturate(1.4);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 20px;
+            box-shadow: 0 8px 48px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.1);
+        }
+
+        @media (max-width: 768px) {
+            .get-in-touch { padding: 36px 24px; margin: 80px 16px 16px; top: 0; transform: none; }
+        }
+
+
+        /* ── LOCATION BAR ── */
+        #location-bar {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            height: 36px;
+            background: #080808;
+            border-top: 1px solid #1a1a1a;
+            display: flex; align-items: center;
+            padding: 0 28px; gap: 40px;
+            z-index: 1000;
+            font-family: 'Raleway', sans-serif;
+            font-size: 10px; letter-spacing: 2px;
+            text-transform: uppercase; color: #444;
+            pointer-events: none;
+        }
+        #location-bar .lb-dot {
+            width: 6px; height: 6px; background: #5ea500;
+            border-radius: 50%; animation: blink-dot 2s ease-in-out infinite;
+            flex-shrink: 0;
+        }
+        @keyframes blink-dot { 0%,100%{opacity:1} 50%{opacity:0.3} }
+        #location-bar .lb-city { color: #888; }
+        #location-bar .lb-coords { margin-left: auto; color: #333; }
+
+        /* ====== HAMBURGER + SIDEBAR NAV ====== */
+        :root { --cta: #5ea500; }
+        #nav-hamburger {
+            position: fixed; top: 16px; left: 24px;
+            width: 36px; height: 36px; z-index: 10001;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 5px; pointer-events: auto; cursor: pointer;
+            background: none; border: none; padding: 0;
+        }
+        #nav-hamburger span {
+            display: block; width: 22px; height: 1.5px; background: #fff;
+            transform-origin: center;
+            transition: transform 0.4s cubic-bezier(0.16,1,0.3,1), opacity 0.3s ease, width 0.3s ease;
+        }
+        #nav-hamburger.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+        #nav-hamburger.open span:nth-child(2) { opacity: 0; width: 0; }
+        #nav-hamburger.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+        #nav-backdrop {
+            position: fixed; inset: 0; background: rgba(0,0,0,0);
+            z-index: 9995; pointer-events: none; transition: background 0.5s ease;
+        }
+        #nav-backdrop.active { background: rgba(0,0,0,0.45); pointer-events: auto; }
+        #nav-sidebar {
+            position: fixed; top: 0; left: -100%;
+            width: min(320px, 85vw); height: 100vh;
+            background: #0a0a0a; z-index: 9996;
+            display: flex; flex-direction: column;
+            border-right: 1px solid #151515;
+            transition: left 0.65s cubic-bezier(0.16,1,0.3,1); overflow: hidden;
+        }
+        #nav-sidebar.open { left: 0; }
+        #nav-sidebar .sidebar-head {
+            padding: 28px 28px 0;
+            display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+        }
+        #nav-sidebar .sidebar-logo {
+            font-family: 'Raleway', sans-serif; font-size: 20px; letter-spacing: 4px;
+            color: #fff; text-decoration: none; font-weight: 300;
+        }
+        #nav-sidebar .sidebar-logo em { font-style: normal; color: var(--cta); }
+        .ws-sentence {
+            flex: 1; display: flex; flex-direction: row; align-items: center;
+            padding: 0 28px; gap: 0.35em; overflow: hidden;
+        }
+        .ws-sentence h2 {
+            font-family: 'Raleway', sans-serif;
+            font-size: clamp(1.6rem, 4vw, 2.1rem); font-weight: 300;
+            color: #fff; white-space: nowrap; margin: 0; line-height: 1.2; letter-spacing: 2px;
+        }
+        .ws-word-col {
+            flex: 1; height: 100%; overflow-y: scroll; scroll-snap-type: y mandatory;
+            scrollbar-width: none; display: flex; flex-direction: column;
+            mask-image: linear-gradient(to bottom, transparent 0%, black 28%, black 72%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 28%, black 72%, transparent 100%);
+        }
+        .ws-word-col::-webkit-scrollbar { display: none; }
+        .ws-word-spacer { flex-shrink: 0; height: 50%; }
+        .ws-word-item {
+            flex-shrink: 0; height: 3.2rem; scroll-snap-align: center;
+            display: flex; align-items: center;
+        }
+        .ws-word-item a {
+            font-family: 'Raleway', sans-serif;
+            font-size: clamp(1.6rem, 4vw, 2.1rem); font-weight: 300;
+            color: #222; text-decoration: none;
+            line-height: 1; white-space: nowrap;
+            transition: color 0.3s ease; letter-spacing: 2px;
+        }
+        .ws-word-item.ws-active a { color: var(--cta); }
+        #nav-sidebar .sidebar-foot {
+            padding: 24px 28px; flex-shrink: 0;
+            border-top: 1px solid #111; display: flex; gap: 24px;
+        }
+        #nav-sidebar .sidebar-foot a {
+            font-family: 'Raleway', sans-serif; font-size: 9px;
+            letter-spacing: 2px; text-transform: uppercase; color: #444;
+            text-decoration: none; transition: color 0.2s;
+        }
+        #nav-sidebar .sidebar-foot a:hover { color: var(--cta); }
+        .ws-tick {
+            position: absolute; left: 28px; top: 50%; transform: translateY(-50%);
+            width: 3px; height: 3px; border-radius: 50%;
+            background: var(--cta); box-shadow: 0 0 8px var(--cta); pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SHAPES BACKGROUND CANVAS -->
+    <canvas id="shapes-bg"></canvas>
+
+    <div class="transition-curtain"></div>
+
+    <!-- HAMBURGER -->
+    <button id="nav-hamburger" aria-label="Open navigation" aria-expanded="false">
+        <span></span><span></span><span></span>
+    </button>
+    <div id="nav-backdrop"></div>
+    <aside id="nav-sidebar">
+        <div class="ws-tick"></div>
+        <div class="sidebar-head">
+            <a href="index.html" class="sidebar-logo">Y<em>.</em>VARMA</a>
+        </div>
+        <div class="ws-sentence">
+            <h2>Navigate —</h2>
+            <div class="ws-word-col" id="ws-col">
+                <div class="ws-word-spacer"></div>
+                <div class="ws-word-item" data-href="index.html">
+                    <a href="index.html">Home.</a>
+                </div>
+                <div class="ws-word-item" data-href="projects.html">
+                    <a href="projects.html">Projects.</a>
+                </div>
+                <div class="ws-word-item ws-active" data-href="contact.html">
+                    <a href="contact.html">Contact.</a>
+                </div>
+                <div class="ws-word-item" data-href="https://github.com/Yaswanth-Varma-Sangaraju">
+                    <a href="https://github.com/Yaswanth-Varma-Sangaraju" target="_blank">GitHub.</a>
+                </div>
+                <div class="ws-word-item" data-href="https://www.linkedin.com/in/yaswanthvarma07">
+                    <a href="https://www.linkedin.com/in/yaswanthvarma07" target="_blank">LinkedIn.</a>
+                </div>
+                <div class="ws-word-spacer"></div>
+            </div>
+        </div>
+        <div class="sidebar-foot">
+            <a href="https://github.com/Yaswanth-Varma-Sangaraju" target="_blank">GitHub</a>
+            <a href="https://www.linkedin.com/in/yaswanthvarma07" target="_blank">LinkedIn</a>
+            <a href="index.html">Home</a>
+        </div>
+    </aside>
+
+
+
+
+    <section class="get-in-touch">
+        <h1 class="title">Get in touch</h1>
+        
+        <form class="contact-form row" id="contact-form" name="submit-to-google-sheet">
+           <div class="form-field col x-50">
+              <input id="name" name="Name" class="input-text js-input" type="text" required>
+              <label class="label" for="name">Name</label>
+           </div>
+           <div class="form-field col x-50">
+              <input id="email" name="Email" class="input-text js-input" type="email" required>
+              <label class="label" for="email">E-mail</label>
+           </div>
+           <div class="form-field col x-100">
+              <input id="message" name="Message" class="input-text js-input" type="text" required>
+              <label class="label" for="message">Message</label>
+           </div>
+           <div class="form-field col x-100 align-center">
+              <input class="submit-btn" type="submit" value="Submit">
+           </div>
+        </form>
+
+        <div id="success-message">
+            <h2>Message Sent!</h2>
+            <p>Thank you for reaching out. We will get back to you shortly.</p>
+            <button onclick="location.reload()">Send Another</button>
+        </div>
+    </section>
+
+    <script>
+        // --- 1. CONFIGURATION ---
+        // PASTE YOUR GOOGLE SCRIPT WEB APP URL HERE
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbxYIMu7Ic595jcLqOt-vHzN0XimJG1wh8a9E6mYv6Jkq-5Cd5RmS3GP6hWUAZePhCRM/exec'; 
+
+        // --- 2. FLOATING LABEL ANIMATION ---
+        $(document).ready(function() {
+            $('.js-input').keyup(function() {
+                if( $(this).val() ) {
+                    $(this).addClass('not-empty');
+                } else {
+                    $(this).removeClass('not-empty');
+                }
+            });
+        });
+
+        // --- 3. GOOGLE SHEETS SUBMISSION LOGIC ---
+        const form = document.forms['submit-to-google-sheet'];
+
+        $('#contact-form').submit(function(e) {
+            e.preventDefault(); // Stop page reload
+
+            // Visual feedback: Change button text
+            const btn = $('.submit-btn');
+            const originalText = btn.val();
+            btn.val('Sending...');
+            btn.prop('disabled', true);
+
+            // Send data
+            fetch(scriptURL, { method: 'POST', body: new FormData(form)})
+                .then(response => {
+                    console.log('Success!', response);
+                    
+                    // Fade out form, Fade in success message
+                    $('#contact-form').fadeOut(500, function(){
+                        $('.title').hide(); // Hide the main "Get in touch" title too
+                        $('#success-message').fadeIn(500);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error!', error.message);
+                    alert('Error submitting form. Please check your console.');
+                    btn.val(originalText);
+                    btn.prop('disabled', false);
+                });
+        });
+    </script>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+        // Page transition back link
+        const curtain = document.querySelector('.transition-curtain');
+        const backLink = document.querySelector('.transition-back');
+        if (backLink && curtain && typeof gsap !== 'undefined') {
+            backLink.addEventListener('click', e => {
+                e.preventDefault();
+                const target = backLink.getAttribute('href');
+                gsap.to(curtain, { scaleY: 1, duration: 0.7, ease: 'power4.inOut', onComplete: () => {
+                    setTimeout(() => window.location.href = target, 400);
+                }});
+            });
+        }
+
+        // Live validation highlight
+        document.querySelectorAll('.js-input').forEach(input => {
+            input.addEventListener('input', () => {
+                const field = input.closest('.form-field');
+                if (input.value.trim().length > 0) {
+                    field.classList.add('valid');
+                } else {
+                    field.classList.remove('valid');
+                }
+            });
+        });
+
+        // Character counter on message field
+        const msgInput = document.getElementById('message');
+        if (msgInput) {
+            const counter = document.createElement('span');
+            counter.className = 'char-counter';
+            counter.textContent = '0 / 200';
+            msgInput.closest('.form-field').appendChild(counter);
+            msgInput.addEventListener('input', () => {
+                const len = msgInput.value.length;
+                counter.textContent = len + ' / 200';
+                counter.classList.toggle('warning', len > 180);
+            });
+        }
+
+        // Input label - also handle paste
+        document.querySelectorAll('.js-input').forEach(input => {
+            input.addEventListener('paste', () => {
+                setTimeout(() => {
+                    input.classList.toggle('not-empty', input.value.length > 0);
+                }, 10);
+            });
+        });
+
+        // Entrance animation for title
+        const title = document.querySelector('.get-in-touch .title');
+        if (title && typeof gsap !== 'undefined') {
+            gsap.from(title, { y: -20, opacity: 0, duration: 0.8, ease: 'power2.out', delay: 0.2 });
+        }
+    });
+    </script>
+
+    <script>
+    /* ============================================================
+       BACKGROUND — exact code from donotfold/yyapzOP
+       Canvas is pointer-events:none so form stays fully interactive
+    ============================================================ */
+    (function () {
+      var gap = 40;
+      var radiusVmin = 30;
+      var speedIn = 0.5;
+      var speedOut = 0.6;
+      var restScale = 0.09;
+      var minHoverScale = 1;
+      var maxHoverScale = 3;
+      var waveSpeed = 1200;
+      var waveWidth = 180;
+
+      var PALETTE = [
+        { type: 'solid', value: '#22c55e' },
+        { type: 'solid', value: '#06b6d4' },
+        { type: 'solid', value: '#f97316' },
+        { type: 'solid', value: '#ef4444' },
+        { type: 'solid', value: '#facc15' },
+        { type: 'solid', value: '#ec4899' },
+        { type: 'solid', value: '#9ca3af' },
+        { type: 'solid', value: '#a78bfa' },
+        { type: 'solid', value: '#60a5fa' },
+        { type: 'solid', value: '#34d399' },
+        { type: 'gradient', stops: ['#6366f1', '#3b82f6'] },
+        { type: 'gradient', stops: ['#06b6d4', '#6366f1'] },
+        { type: 'gradient', stops: ['#22c55e', '#06b6d4'] },
+        { type: 'gradient', stops: ['#f97316', '#ef4444'] },
+        { type: 'gradient', stops: ['#8b5cf6', '#06b6d4'] },
+        { type: 'gradient', stops: ['#3b82f6', '#8b5cf6'] },
+        { type: 'gradient', stops: ['#34d399', '#3b82f6'] },
+      ];
+
+      var SHAPE_TYPES = ['circle', 'pill', 'star', 'star'];
+
+      var canvas = document.getElementById('shapes-bg');
+      var ctx = canvas.getContext('2d');
+
+      var grid = null;
+      var rafId = null;
+      var pointer = null;
+      var activity = 0;
+      var waves = [];
+      var maskRects = [];
+      var frameCount = 0;
+      var maskOverride = false;
+
+      function rnd(min, max) { return Math.random() * (max - min) + min; }
+      function rndInt(min, max) { return Math.floor(rnd(min, max + 1)); }
+      function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+      function smoothstep(t) {
+        var c = Math.max(0, Math.min(1, t));
+        return c * c * (3 - 2 * c);
+      }
+
+      function durationToFactor(seconds) {
+        if (seconds <= 0) return 1;
+        return 1 - Math.pow(0.05, 1 / (60 * seconds));
+      }
+
+      function drawCircle(ctx, size) {
+        ctx.beginPath();
+        ctx.arc(0, 0, size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      function drawPill(ctx, size) {
+        var w = size * 0.48;
+        var h = size;
+        ctx.beginPath();
+        ctx.roundRect(-w, -h, w * 2, h * 2, w);
+        ctx.fill();
+      }
+
+      function drawStar(ctx, size, points, innerRatio) {
+        ctx.beginPath();
+        for (var i = 0; i < points * 2; i++) {
+          var angle = (i * Math.PI) / points - Math.PI / 2;
+          var r = i % 2 === 0 ? size : size * innerRatio;
+          var x = Math.cos(angle) * r;
+          var y = Math.sin(angle) * r;
+          i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      function drawShape(ctx, shape) {
+        switch (shape.type) {
+          case 'circle': return drawCircle(ctx, shape.size / 1.5);
+          case 'pill':   return drawPill(ctx, shape.size / 1.4);
+          case 'star':   return drawStar(ctx, shape.size, shape.points, shape.innerRatio);
+        }
+      }
+
+      function resolveFill(ctx, colorDef, size) {
+        if (colorDef.type === 'solid') return colorDef.value;
+        var grad = ctx.createRadialGradient(0, -size * 0.3, 0, 0, size * 0.3, size * 1.5);
+        grad.addColorStop(0, colorDef.stops[0]);
+        grad.addColorStop(1, colorDef.stops[1]);
+        return grad;
+      }
+
+      function randomStarProps() {
+        return {
+          points: rndInt(4, 10),
+          innerRatio: rnd(0.1, 0.5),
+        };
+      }
+
+      function buildGrid() {
+        var W = window.innerWidth;
+        var H = window.innerHeight;
+        var cols = Math.floor(W / gap);
+        var rows = Math.floor(H / gap);
+        var offsetX = (W - (cols - 1) * gap) / 2;
+        var offsetY = (H - (rows - 1) * gap) / 2;
+        var shapes = [];
+
+        for (var row = 0; row < rows; row++) {
+          for (var col = 0; col < cols; col++) {
+            var type = pick(SHAPE_TYPES);
+            var shape = {
+              x: offsetX + col * gap,
+              y: offsetY + row * gap,
+              type: type,
+              color: pick(PALETTE),
+              angle: rnd(0, Math.PI * 2),
+              size: gap * 0.38,
+              scale: restScale,
+              maxScale: rnd(minHoverScale, maxHoverScale),
+              hovered: false,
+            };
+            if (type === 'star') Object.assign(shape, randomStarProps());
+            shapes.push(shape);
+          }
+        }
+
+        return { shapes: shapes, width: W, height: H };
+      }
+
+      function init() {
+        var W = window.innerWidth;
+        var H = window.innerHeight;
+        var dpr = window.devicePixelRatio || 1;
+
+        canvas.width = W * dpr;
+        canvas.height = H * dpr;
+        canvas.style.width = W + 'px';
+        canvas.style.height = H + 'px';
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.scale(dpr, dpr);
+
+        grid = buildGrid();
+      }
+
+      function tick() {
+        if (!grid) { rafId = requestAnimationFrame(tick); return; }
+
+        var shapes = grid.shapes;
+        var width = grid.width;
+        var height = grid.height;
+        var radius = Math.min(width, height) * (radiusVmin / 100);
+        var now = performance.now();
+
+        ctx.clearRect(0, 0, width, height);
+        /* transparent bg so white page shows through */
+        ctx.clearRect(0, 0, width, height);
+
+        activity *= 0.93;
+
+        frameCount++;
+        if (frameCount % 10 === 0) {
+          maskRects = Array.from(document.querySelectorAll('[data-shape-mask]'))
+            .map(function(el) { return el.getBoundingClientRect(); });
+        }
+
+        var maxDist = Math.sqrt(width * width + height * height);
+        waves = waves.filter(function(w) {
+          return (now - w.startTime) / 1000 * waveSpeed < maxDist + waveWidth;
+        });
+
+        for (var i = 0; i < shapes.length; i++) {
+          var shape = shapes[i];
+          var pad = gap / 2;
+          var masked = !maskOverride && maskRects.some(function(r) {
+            return shape.x >= r.left - pad && shape.x <= r.right  + pad &&
+                   shape.y >= r.top  - pad && shape.y <= r.bottom + pad;
+          });
+
+          if (masked) {
+            shape.scale += (0 - shape.scale) * durationToFactor(speedOut);
+            if (shape.scale < 0.005) shape.scale = 0;
+            continue;
+          }
+
+          var pointerInfluence = 0;
+          if (pointer && activity > 0.001) {
+            var dx = shape.x - pointer.x;
+            var dy = shape.y - pointer.y;
+            var dist = Math.sqrt(dx * dx + dy * dy);
+            pointerInfluence = smoothstep(1 - dist / radius) * activity;
+
+            if (pointerInfluence > 0.05 && !shape.hovered) {
+              shape.hovered = true;
+              shape.maxScale = rnd(minHoverScale, maxHoverScale);
+              shape.angle = rnd(0, Math.PI * 2);
+              if (shape.type === 'star') Object.assign(shape, randomStarProps());
+            } else if (pointerInfluence <= 0.05) {
+              shape.hovered = false;
+            }
+          } else {
+            shape.hovered = false;
+          }
+
+          var waveInfluence = 0;
+          for (var j = 0; j < waves.length; j++) {
+            var wave = waves[j];
+            var waveRadius = (now - wave.startTime) / 1000 * waveSpeed;
+            var wdx = shape.x - wave.x;
+            var wdy = shape.y - wave.y;
+            var wdist = Math.sqrt(wdx * wdx + wdy * wdy);
+            var t = 1 - Math.abs(wdist - waveRadius) / waveWidth;
+            if (t > 0) waveInfluence = Math.max(waveInfluence, Math.sin(Math.PI * t));
+          }
+
+          var pointerTarget = restScale + pointerInfluence * (shape.maxScale - restScale);
+          var waveTarget = restScale + waveInfluence * (shape.maxScale - restScale);
+          var target = Math.max(pointerTarget, waveTarget);
+
+          var factor = target > shape.scale ? durationToFactor(speedIn) : durationToFactor(speedOut);
+          shape.scale += (target - shape.scale) * factor;
+
+          if (shape.scale < restScale * 0.15) continue;
+
+          ctx.save();
+          ctx.translate(shape.x, shape.y);
+          ctx.rotate(shape.angle);
+          ctx.scale(shape.scale, shape.scale);
+          ctx.fillStyle = resolveFill(ctx, shape.color, shape.size);
+          drawShape(ctx, shape);
+          ctx.restore();
+        }
+
+        rafId = requestAnimationFrame(tick);
+      }
+
+      function onMove(e) {
+        pointer = { x: e.clientX, y: e.clientY };
+        activity = 1;
+      }
+
+      function onClick(e) {
+        triggerWave(e.clientX, e.clientY);
+      }
+
+      function triggerWave(x, y) {
+        x = x !== undefined ? x : window.innerWidth / 2;
+        y = y !== undefined ? y : window.innerHeight / 2;
+        waves.push({ x: x, y: y, startTime: performance.now() });
+        maskOverride = true;
+        var delay = Math.sqrt(window.innerWidth * window.innerWidth + window.innerHeight * window.innerHeight) / waveSpeed;
+        setTimeout(function() { maskOverride = false; }, delay * 1000);
+      }
+
+      init();
+      rafId = requestAnimationFrame(tick);
+
+      window.addEventListener('resize', init);
+      window.addEventListener('pointermove', onMove);
+      window.addEventListener('click', onClick);
+
+      /* fire opening wave from center */
+      triggerWave();
+    })();
+    </script>
+
+
+    <!-- LOCATION BAR -->
+    <div id="location-bar">
+        <div class="lb-dot"></div>
+        <span class="lb-city">—</span>
+        <span class="lb-time">—</span>
+        <span class="lb-tz">—</span>
+        <span class="lb-coords">—</span>
+    </div>
+
+    <script>
+    (function() {
+        const bar = document.getElementById('location-bar');
+        if (!bar) return;
+        const CITY = 'HYDERABAD, IN'; const LAT = '17.3850° N'; const LNG = '78.4867° E';
+        function pad(n) { return String(n).padStart(2,'0'); }
+        function update() {
+            const now = new Date();
+            const utc = now.getTime() + now.getTimezoneOffset()*60000;
+            const ist = new Date(utc + 5.5*3600000);
+            const h = ist.getHours(), m = pad(ist.getMinutes());
+            const ampm = h>=12?'PM':'AM'; const h12 = h%12||12;
+            bar.querySelector('.lb-time').textContent = `${h12}:${m} ${ampm}`;
+        }
+        update(); setInterval(update, 30000);
+        bar.querySelector('.lb-city').textContent = CITY;
+        bar.querySelector('.lb-tz').textContent = 'GMT+5:30';
+        bar.querySelector('.lb-coords').textContent = `${LAT}, ${LNG}`;
+    })();
+    </script>
+
+    <script>
+    /* SIDEBAR NAV */
+    (function() {
+        const hamburger = document.getElementById('nav-hamburger');
+        const sidebar   = document.getElementById('nav-sidebar');
+        const backdrop  = document.getElementById('nav-backdrop');
+        const col       = document.getElementById('ws-col');
+        const items     = col ? [...col.querySelectorAll('.ws-word-item')] : [];
+
+        function openNav()  { sidebar.classList.add('open'); backdrop.classList.add('active'); hamburger.classList.add('open'); hamburger.setAttribute('aria-expanded','true'); }
+        function closeNav() { sidebar.classList.remove('open'); backdrop.classList.remove('active'); hamburger.classList.remove('open'); hamburger.setAttribute('aria-expanded','false'); }
+
+        hamburger.addEventListener('click', () => sidebar.classList.contains('open') ? closeNav() : openNav());
+        backdrop.addEventListener('click', closeNav);
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeNav(); });
+
+        if (col) {
+            col.style.setProperty('--count', items.length);
+            items.forEach((item, i) => item.style.setProperty('--i', i));
+            function updateActive() {
+                const center = col.scrollTop + col.clientHeight / 2;
+                let closest = 0, closestDist = Infinity;
+                items.forEach((item, i) => {
+                    const mid = item.offsetTop + item.offsetHeight / 2;
+                    const d = Math.abs(center - mid);
+                    item.classList.remove('ws-active');
+                    if (d < closestDist) { closestDist = d; closest = i; }
+                });
+                items[closest].classList.add('ws-active');
+            }
+            col.addEventListener('scroll', updateActive, { passive: true });
+            requestAnimationFrame(updateActive);
+        }
+
+        /* internal nav transitions */
+        document.querySelectorAll('#nav-sidebar a[href]').forEach(link => {
+            const href = link.getAttribute('href');
+            if (!href || href.startsWith('http') || href.startsWith('#') || link.target === '_blank') return;
+            link.addEventListener('click', e => {
+                e.preventDefault();
+                closeNav();
+                const curtain = document.querySelector('.transition-curtain');
+                curtain.style.transition = 'transform 0.65s cubic-bezier(0.76,0,0.24,1)';
+                curtain.style.transform = 'scaleY(1)';
+                setTimeout(() => { window.location.href = href; }, 640);
+            });
+        });
+    })();
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,1705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yaswanth Varma - Portfolio</title>
+
+    <link rel="icon" type="image/png" href="favicon.png">
+    
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;600;900&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+    <link href="https://fonts.bunny.net/css?family=noto-sans-mono:400" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- 1. CORE CONFIG --- */
+        @font-face {
+            font-family: 'PP Neue Montreal';
+            src: url('https://cdn.prod.website-files.com/6819ed8312518f61b84824df/6819ed8312518f61b84825ba_PPNeueMontreal-Medium.woff2') format('woff2');
+            font-weight: 500;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        @property --_s {
+            syntax: "<number>";
+            initial-value: 0;
+            inherits: true;
+        }
+
+        :root {
+            --cta: rgb(94, 165, 0);
+            --f-size: clamp(2rem, 4vw + 1rem, 5rem);
+            --easing: linear(0, 1.42406 3.67%, 1.65745 4.64%, 1.71709 5.111%, 1.74059 5.591%, 1.73313 5.971%, 1.70302 6.361%, 1.57154 7.201%, 0.68765 10.781%, 0.57364 11.621%, 0.53175 12.451%, 0.53598 12.831%, 0.55521 13.231%, 0.63817 14.071%, 1.19719 17.652%, 1.26945 18.492%, 1.2961 19.322%, 1.2935 19.702%, 1.28141 20.102%, 1.22906 20.942%, 0.87551 24.522%, 0.82972 25.363%, 0.81279 26.183%, 0.81425 26.563%, 0.8217 26.963%, 0.85499 27.813%, 1.07903 31.403%, 1.10761 32.233%, 1.11838 33.053%, 1.1128 33.833%, 1.0918 34.683%, 0.9501 38.274%, 0.93199 39.104%, 0.92516 39.914%, 0.92863 40.704%, 0.94188 41.554%, 1.0315 45.145%, 1.04288 45.965%, 1.04731 46.775%, 1.04586 47.455%, 1.03969 48.185%, 0.98337 51.745%, 0.97376 52.705%, 0.97009 53.635%, 0.97488 55.056%, 1.01049 58.616%, 1.0189 60.486%, 1.0159 61.926%, 0.99343 65.477%, 0.98806 67.337%, 0.98996 68.807%, 1.00408 72.327%, 1.00753 74.157%, 0.99524 81.008%, 1.00297 87.699%, 0.99812 94.579%, 1.00074);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: none;
+        }
+        
+        body {
+            background-color: #fff;
+            color: #000;
+            overflow-x: hidden; 
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        /* --- 2. LAYOUT STRUCTURE --- */
+        /* Three.js Canvas (Fixed Background for Page 1) */
+        #canvas-container {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100vh;
+            z-index: 0;
+            pointer-events: auto;
+        }
+
+        /* Scroll Wrapper (Contains both pages) */
+        .scroll-wrapper {
+            position: relative;
+            z-index: 10;
+            pointer-events: none; /* Allows click-through to Three.js on Page 1 */
+        }
+
+        /* Page 1 (Transparent to show Three.js) */
+        .page-one {
+            height: 100vh;
+            width: 100%;
+            position: relative;
+            pointer-events: none; 
+        }
+
+        /* Re-enable pointer events for UI */
+        .page-one .title, 
+        .page-one .interaction-hint,
+        .page-one ul {
+            pointer-events: auto;
+        }
+
+        /* Page 2 (Solid Background with Spiral) */
+        .page-two {
+            min-height: 100vh; 
+            width: 100%;
+            background-color: #000; 
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            /* Shadow to cover the 3D scene smoothly */
+            box-shadow: 0px -20px 50px rgba(0,0,0,0.5); 
+            pointer-events: auto; /* Catch mouse events for Spiral */
+        }
+
+        /* Spiral Canvas (Inside Page 2) */
+        #glcanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.3;
+        }
+
+        /* Scramble Text (On top of Spiral) */
+        .scramble {
+            position: relative; 
+            display: flex;
+            flex-direction: column;
+            align-items: center; 
+            justify-content: center;
+            gap: 0.4em;
+            font-family: 'Bebas Neue', 'Noto Sans Mono', monospace; 
+            z-index: 5;
+            color: #888; 
+            width: 92%;
+            max-width: 92%;
+            perspective: 500px;
+            pointer-events: none;
+        }
+        .scramble-line {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: nowrap;
+            gap: 0.35ch;
+            white-space: nowrap;
+            width: 100%;
+        }
+        .scramble-line > * { display: flex; align-items: center; gap: 0; }
+        .scramble-line--main {
+            gap: 0.4em; /* word gap between each word-group */
+        }
+        .scramble-line--main > * > span {
+            display: inline-block;
+            position: relative;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(1.8rem, 7.5vw, 7rem);
+            letter-spacing: 0.01em;
+            color: #bbb;
+        }
+        .scramble-line--main > *:nth-child(1) > span { color: var(--cta); }
+
+        /* Sub-line: words are <p> elements, letters are <span> inside them.
+           gap on .scramble-line controls WORD spacing,
+           letter-spacing on span controls LETTER spacing within each word. */
+        .scramble-line--sub {
+            gap: 0.55em; /* word gap — clearly wider than letter gap */
+        }
+        .scramble-line--sub > * > span {
+            display: inline-block;
+            position: relative;
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 400;
+            font-style: italic;
+            font-size: clamp(1.05rem, 2.8vw, 2.6rem);
+            letter-spacing: 0.03em; /* tight — just enough air, no merging */
+            color: #777;
+        }
+
+        /* --- UI ELEMENTS (Nav, Titles) --- */
+        ul {
+            display: flex; flex-wrap: wrap; gap: 0 4em; list-style: none;
+            color: #000; padding: 0; margin-top: 30px;
+            justify-content: center;
+        }
+        ul li { position: relative; }
+        ul li:not(:last-child) { border-image: conic-gradient(currentColor 0 0) 0 1 0 0/calc(50% - 2px) 1em/2.5em; }
+        
+        ul li a {
+            --h: .12em; 
+            display: flex; gap: .15ch;
+            font: bold 40px monospace; 
+            text-decoration: none; 
+            text-transform: uppercase;
+            color: inherit; 
+            padding-block: .2em; 
+            transition: --_s 1.5s var(--easing);
+            cursor: none;
+        }
+        
+        ul li a span {
+            display: inline-block;
+            offset: shape(from .5ch, curve to calc(100% - .5ch) 50% with 30% calc(50% - var(--_s)*sibling-count()*var(--h))/ 70% calc(50% - var(--_s)*sibling-count()*var(--h)) ) calc(99.9%*(sibling-index() - 1)/(sibling-count() - 1));
+            pointer-events: none; 
+        }
+
+        .title {
+            position: absolute; width: 100%; text-align: center; top: 50px;
+            color: #000; z-index: 10;
+        }
+        .title h3 {
+            font-family: "Montserrat", sans-serif; font-size: 80px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 1px;
+            display: flex; justify-content: center; margin-bottom: 0;
+        }
+        .title h3 span:nth-of-type(2) { font-weight: 400; }
+
+        .interaction-hint {
+            position: absolute; bottom: 40px; left: 40px;
+            display: flex; align-items: center; gap: 15px;
+            color: #888; font-family: "Roboto", sans-serif;
+            font-size: 12px; letter-spacing: 2px; text-transform: uppercase;
+            z-index: 5; transition: opacity 0.4s ease;
+        }
+        .mouse-icon { width: 22px; height: 35px; border: 2px solid #888; border-radius: 12px; position: relative; }
+        .mouse-icon::before {
+            content: ""; width: 4px; height: 4px; background: #888;
+            position: absolute; left: 50%; transform: translateX(-50%); top: 7px;
+            border-radius: 50%; animation: mouse-scroll 1.5s infinite;
+        }
+        @keyframes mouse-scroll { 0% { opacity: 1; top: 7px; } 100% { opacity: 0; top: 20px; } }
+
+        /* --- LOADER --- */
+        .willem-header {
+            color: #000000; background-color: #f4f4f4; font-family: 'PP Neue Montreal', Arial, sans-serif;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100vh; z-index: 10000;
+            display: flex; justify-content: center; align-items: center; overflow: hidden; pointer-events: auto;
+        }
+        .willem-loader { display: flex; width: 100%; height: 100%; justify-content: center; align-items: center; position: absolute; top: 0; left: 0; }
+        .willem__h1 { white-space: nowrap; display: flex; justify-content: center; font-size: 12.5em; font-weight: 500; line-height: .75; position: relative; }
+        .willem__h1-start { display: flex; justify-content: flex-end; overflow: hidden; }
+        .willem__h1-end { display: flex; justify-content: flex-start; overflow: hidden; }
+        .willem__letter { display: block; position: relative; }
+        .willem-loader__box { display: flex; flex-flow: column; justify-content: center; align-items: center; width: 0; position: relative; }
+        .willem-loader__box-inner { display: flex; justify-content: center; align-items: center; min-width: 1em; height: 95%; position: relative; }
+        .willem__growing-image { display: flex; justify-content: center; align-items: center; width: 0%; height: 100%; position: absolute; overflow: hidden; }
+        .willem__growing-image-wrap { width: 100%; min-width: 1em; height: 100%; position: absolute; }
+        .willem__cover-image, .willem__cover-image-extra { pointer-events: none; object-fit: cover; width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
+        .willem__cover-image-extra.is--1 { z-index: 3; }
+        .willem__cover-image-extra.is--2 { z-index: 2; }
+        .willem__cover-image-extra.is--3 { z-index: 1; }
+        @media screen and (max-width: 991px) { .willem__h1 { font-size: 9em; } }
+        @media screen and (max-width: 767px) { .willem__h1 { font-size: 5.5em; } }
+
+        /* --- CURSOR & EXTRAS --- */
+        #custom-cursor {
+            position: fixed; top: 0; left: 0; width: 20px; height: 20px;
+            background-color: #fff; border-radius: 50%; pointer-events: none; z-index: 100002;
+            mix-blend-mode: difference;
+            will-change: transform;
+            /* No CSS transition — physics loop handles everything */
+        }
+        /* When about panel is open */
+        body.panel-open #custom-cursor {
+            mix-blend-mode: normal;
+            background-color: rgba(255,255,255,0.9);
+            box-shadow: 0 0 0 1.5px rgba(255,255,255,0.3);
+        }
+
+        .transition-curtain {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #0b0b0b; z-index: 99999;
+            transform: scaleY(0); transform-origin: bottom; pointer-events: none;
+        }
+
+        .badge-container {
+            position: fixed; bottom: 20px; right: 20px; width: 100px; height: 100px; z-index: 20; pointer-events: auto;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .badge-container:hover { transform: scale(1.3); }
+        .badge-container svg { width: 100%; height: 100%; overflow: visible; }
+        .badge-container #blobClip { transform-origin: center; transition: transform 0.4s ease-out; }
+        .badge-container:hover #blobClip { transform: scale(1.1); }
+        .badge-container .text-content { font: 700 11px/1.2 system-ui; letter-spacing: 2px; text-transform: uppercase; fill: #555; transition: fill 0.5s ease; }
+        .badge-container:hover .text-content { fill: #fff; }
+
+        @media (max-width: 768px) {
+            .title { top: 30px; }
+            .title h3 { font-size: 38px; flex-direction: column; gap: 0px; }
+            ul { position: fixed; bottom: 40px; width: 100%; left: 0; margin: 0; gap: 1.5em; flex-direction: row; justify-content: center; z-index: 20; }
+            ul li:not(:last-child) { border-image: none; }
+            ul li a { font-size: 16px; transition: none; padding: 10px; background: rgba(255,255,255,0.5); backdrop-filter: blur(5px); border-radius: 5px; }
+            ul li a span { offset: none !important; }
+            .interaction-hint, #custom-cursor { display: none; }
+            * { cursor: auto !important; }
+            .badge-container { width: 70px; height: 70px; bottom: 100px; right: 15px; }
+        }
+    
+        /* ====== NEW ADDITIONS ====== */
+
+        /* Noise overlay */
+        body::before {
+            content: '';
+            position: fixed; top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+            pointer-events: none; z-index: 99998; opacity: 0.35;
+            animation: noise-drift 8s steps(2) infinite;
+        }
+        @keyframes noise-drift {
+            0%{transform:translate(0,0)} 25%{transform:translate(-2px,1px)}
+            50%{transform:translate(1px,-2px)} 75%{transform:translate(2px,1px)}
+        }
+
+        /* ====== HAMBURGER BUTTON ====== */
+        #nav-hamburger {
+            position: fixed;
+            top: 22px; left: 24px;
+            width: 36px; height: 36px;
+            z-index: 10001;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            gap: 5px;
+            pointer-events: auto;
+            cursor: none;
+            background: none; border: none; padding: 0;
+        }
+        #nav-hamburger span {
+            display: block;
+            width: 22px; height: 1.5px;
+            background: #000;
+            transform-origin: center;
+            transition: transform 0.4s cubic-bezier(0.16,1,0.3,1),
+                        opacity 0.3s ease,
+                        width 0.3s ease;
+        }
+        #nav-hamburger.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+        #nav-hamburger.open span:nth-child(2) { opacity: 0; width: 0; }
+        #nav-hamburger.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+        /* ====== SIDEBAR OVERLAY ====== */
+        #nav-backdrop {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0);
+            z-index: 9995;
+            pointer-events: none;
+            transition: background 0.5s ease;
+        }
+        #nav-backdrop.active {
+            background: rgba(0,0,0,0.35);
+            pointer-events: auto;
+        }
+
+        /* ====== SIDEBAR PANEL ====== */
+        #nav-sidebar {
+            position: fixed;
+            top: 0; left: -100%;
+            width: min(320px, 85vw);
+            height: 100vh;
+            background: #0a0a0a;
+            z-index: 9996;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #151515;
+            transition: left 0.65s cubic-bezier(0.16,1,0.3,1);
+            pointer-events: auto;
+            overflow: hidden;
+        }
+        #nav-sidebar.open { left: 0; }
+
+        /* sidebar top strip */
+        #nav-sidebar .sidebar-head {
+            padding: 28px 28px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+        #nav-sidebar .sidebar-logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 20px; letter-spacing: 4px;
+            color: #fff; text-decoration: none; cursor: none;
+        }
+        #nav-sidebar .sidebar-logo em { font-style: normal; color: var(--cta); }
+
+        /* ====== WORD SCROLL INSIDE SIDEBAR ====== */
+        .ws-sentence {
+            flex: 1;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            padding: 0 28px;
+            gap: 0.35em;
+            overflow: hidden;
+        }
+        .ws-sentence h2 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(2rem, 5vw, 2.6rem);
+            font-weight: 400;
+            color: #fff;
+            white-space: nowrap;
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        /* the scrollable word column */
+        .ws-word-col {
+            flex: 1;
+            height: 100%;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scrollbar-width: none;
+            display: flex;
+            flex-direction: column;
+            mask-image: linear-gradient(to bottom,
+                transparent 0%,
+                black 28%,
+                black 72%,
+                transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom,
+                transparent 0%,
+                black 28%,
+                black 72%,
+                transparent 100%);
+        }
+        .ws-word-col::-webkit-scrollbar { display: none; }
+
+        .ws-word-spacer {
+            flex-shrink: 0;
+            height: 50%;
+        }
+        .ws-word-item {
+            flex-shrink: 0;
+            height: 3.2rem;
+            scroll-snap-align: center;
+            display: flex;
+            align-items: center;
+        }
+        .ws-word-item a {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(1.8rem, 4vw, 2.4rem);
+            font-weight: 400;
+            color: #222;
+            text-decoration: none;
+            cursor: none;
+            line-height: 1;
+            white-space: nowrap;
+            transition: color 0.3s ease;
+            letter-spacing: 0.04em;
+        }
+        .ws-word-item.ws-active a {
+            color: var(--cta);
+        }
+
+        /* sidebar bottom */
+        #nav-sidebar .sidebar-foot {
+            padding: 24px 28px;
+            flex-shrink: 0;
+            border-top: 1px solid #111;
+            display: flex;
+            gap: 24px;
+        }
+        #nav-sidebar .sidebar-foot a {
+            font-family: 'Noto Sans Mono', monospace;
+            font-size: 9px; letter-spacing: 2px;
+            text-transform: uppercase; color: #444;
+            text-decoration: none; cursor: none;
+            transition: color 0.2s;
+        }
+        #nav-sidebar .sidebar-foot a:hover { color: var(--cta); }
+
+        /* center tick mark */
+        .ws-tick {
+            position: absolute;
+            left: 28px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px; height: 3px;
+            border-radius: 50%;
+            background: var(--cta);
+            box-shadow: 0 0 8px var(--cta);
+            pointer-events: none;
+        }
+
+        @media (max-width: 768px) {
+            #nav-hamburger span { background: #000; }
+        }
+
+        /* Hide default scrollbar */
+        html {
+            scrollbar-width: none; /* Firefox */
+        }
+        html::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Edge */
+        }
+
+        /* Custom vertical progress scrollbar */
+        #scroll-progress {
+            position: fixed;
+            right: 0;
+            top: 0;
+            width: 3px;
+            height: 0%;
+            background: var(--cta);
+            z-index: 9997;
+            pointer-events: none;
+            transition: height 0.08s linear;
+            box-shadow: 0 0 8px rgba(94, 165, 0, 0.5), 0 0 20px rgba(94, 165, 0, 0.2);
+        }
+        /* Glowing dot at the tip of the scrollbar */
+        #scroll-progress::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            right: -3px;
+            width: 9px;
+            height: 9px;
+            background: var(--cta);
+            border-radius: 50%;
+            box-shadow: 0 0 6px var(--cta), 0 0 14px var(--cta);
+        }
+        /* Track line */
+        #scroll-track {
+            position: fixed;
+            right: 0;
+            top: 0;
+            width: 3px;
+            height: 100%;
+            background: rgba(94, 165, 0, 0.08);
+            z-index: 9996;
+            pointer-events: none;
+        }
+
+        50%{opacity:0.4;transform:scale(0.7)}
+        }
+
+        /* Scroll CTA arrow */
+        #scroll-cta {
+            position: absolute; bottom: 40px; right: 40px;
+            display: flex; flex-direction: column; align-items: center; gap: 8px;
+            font-family: 'Roboto', sans-serif; font-size: 10px;
+            letter-spacing: 3px; text-transform: uppercase; color: #999;
+            z-index: 5; pointer-events: auto; opacity: 0;
+            animation: fade-in-up 1s ease 3.5s forwards;
+        }
+        #scroll-cta .arrow-line {
+            width: 1px; height: 40px;
+            background: linear-gradient(to bottom, #999, transparent);
+            animation: arrow-flow 1.5s ease-in-out infinite;
+        }
+        @keyframes arrow-flow {
+            0%{transform:scaleY(0);transform-origin:top}
+            50%{transform:scaleY(1);transform-origin:top}
+            51%{transform:scaleY(1);transform-origin:bottom}
+            100%{transform:scaleY(0);transform-origin:bottom}
+        }
+        @keyframes fade-in-up {
+            from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)}
+        }
+
+        /* Nav link hover underline accent */
+        ul li a { position: relative; }
+        ul li a::after {
+            content:''; position: absolute; bottom: -4px; left: 0;
+            width: 0%; height: 2px; background: var(--cta);
+            transition: width 0.4s cubic-bezier(0.16,1,0.3,1);
+        }
+        ul li a:hover::after { width: 100%; }
+
+        /* Click ripple */
+        .ripple {
+            position: fixed; border-radius: 50%;
+            background: rgba(94,165,0,0.12); pointer-events: none;
+            z-index: 9996; transform: scale(0);
+            animation: ripple-out 0.6s ease-out forwards;
+        }
+        @keyframes ripple-out { to{transform:scale(4);opacity:0} }
+
+        /* Nav tooltip */
+        .nav-tooltip {
+            position: fixed; padding: 6px 12px;
+            background: #000; color: var(--cta);
+            font-family: 'Noto Sans Mono', monospace; font-size: 10px;
+            letter-spacing: 2px; text-transform: uppercase;
+            pointer-events: none; z-index: 9998;
+            opacity: 0; transform: translateY(4px);
+            transition: opacity 0.2s, transform 0.2s;
+            border: 1px solid #222;
+        }
+        .nav-tooltip.show { opacity: 1; transform: translateY(0); }
+
+        /* Page two bottom labels */
+        .page-two-bottom {
+            position: absolute; bottom: 40px; width: 100%;
+            display: flex; justify-content: space-between; align-items: flex-end;
+            padding: 0 40px; z-index: 5; pointer-events: none;
+        }
+        .page-two-label {
+            font-family: 'Roboto', sans-serif; font-size: 11px;
+            letter-spacing: 3px; text-transform: uppercase; color: #444;
+        }
+        .page-two-year {
+            font-family: 'Noto Sans Mono', monospace; font-size: 11px;
+            letter-spacing: 2px; color: #333;
+        }
+
+        /* Stats row */
+        .stats-row {
+            position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 60px; z-index: 5; pointer-events: none;
+        }
+        .stat-item { text-align: center; }
+        .stat-number {
+            font-family: 'Noto Sans Mono', monospace;
+            font-size: clamp(1.5rem,3vw,2.5rem); color: var(--cta); line-height: 1; display: block;
+        }
+        .stat-label {
+            font-family: 'Roboto', sans-serif; font-size: 10px;
+            letter-spacing: 3px; text-transform: uppercase; color: #444; display: block; margin-top: 6px;
+        }
+
+        /* About panel */
+        #about-backdrop {
+            position: fixed; inset: 0; background: rgba(0,0,0,0);
+            z-index: 100000; pointer-events: none; transition: background 0.5s ease;
+        }
+        #about-backdrop.active { background: rgba(0,0,0,0.55); pointer-events: auto; }
+        #about-panel {
+            position: fixed; top: 0; right: -100%;
+            width: min(480px, 100vw); height: 100vh;
+            background: #0a0a0a; z-index: 100001;
+            display: flex; flex-direction: column; justify-content: center;
+            padding: 60px 48px;
+            transition: right 0.7s cubic-bezier(0.16,1,0.3,1);
+            pointer-events: auto; border-left: 1px solid #1a1a1a;
+        }
+        #about-panel.open { right: 0; }
+        #about-panel .close-btn {
+            position: absolute; top: 28px; right: 28px;
+            width: 40px; height: 40px; background: none;
+            border: 1px solid #333; color: #fff; font-size: 18px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: none; transition: background 0.2s, border-color 0.2s; border-radius: 4px;
+        }
+        #about-panel .close-btn:hover { background: #1a1a1a; border-color: #555; }
+        #about-panel .panel-eyebrow {
+            font-family: 'Roboto', sans-serif; font-size: 10px;
+            letter-spacing: 4px; text-transform: uppercase; color: var(--cta); margin-bottom: 20px;
+        }
+        #about-panel .panel-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: clamp(2rem,4vw,3rem); font-weight: 900; color: #fff;
+            text-transform: uppercase; line-height: 1; margin-bottom: 32px;
+        }
+        #about-panel .panel-bio {
+            font-family: 'Roboto', sans-serif; font-size: 15px;
+            line-height: 1.8; color: #777; margin-bottom: 40px;
+        }
+        #about-panel .panel-bio strong { color: #bbb; font-weight: 400; }
+        #about-panel .panel-skills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 40px; }
+        #about-panel .skill-tag {
+            padding: 6px 14px; border: 1px solid #222;
+            font-family: 'Noto Sans Mono', monospace; font-size: 11px;
+            letter-spacing: 1px; color: #555;
+            transition: border-color 0.2s, color 0.2s; cursor: none;
+        }
+        #about-panel .skill-tag:hover { border-color: var(--cta); color: var(--cta); }
+        #about-panel .panel-social { display: flex; gap: 20px; }
+        #about-panel .panel-social a {
+            font-family: 'Roboto', sans-serif; font-size: 11px;
+            letter-spacing: 2px; text-transform: uppercase; color: #555;
+            text-decoration: none; transition: color 0.2s; cursor: none;
+        }
+        #about-panel .panel-social a:hover { color: var(--cta); }
+
+        @media(max-width:768px){
+            #status-indicator, #scroll-cta, .stats-row { display: none; }
+            #about-panel { padding: 40px 28px; }
+        }
+
+        /* ====== TEXT SCRAMBLE (About Panel) ====== */
+        .scramble-quote {
+            font-family: 'Noto Sans Mono', monospace;
+            font-size: 13px;
+            letter-spacing: 1.5px;
+            color: #444;
+            margin-bottom: 28px;
+            min-height: 20px;
+            text-transform: uppercase;
+            position: relative;
+        }
+        .scramble-quote::before {
+            content: '> ';
+            color: var(--cta);
+        }
+
+        /* ====== VARMA FULLSCREEN OVERLAY ====== */
+        #varma-overlay {
+            position: fixed; inset: 0;
+            background: #000;
+            z-index: 200000;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+        #varma-overlay.active {
+            opacity: 1; pointer-events: auto;
+        }
+        #varma-overlay-inner {
+            text-align: center;
+        }
+        #varma-overlay .varma-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(4rem, 18vw, 14rem);
+            color: #fff;
+            letter-spacing: 0.08em;
+            line-height: 1;
+            animation: varma-glitch 0.08s steps(1) infinite;
+        }
+        @keyframes varma-glitch {
+            0%   { text-shadow: 2px 0 var(--cta), -2px 0 #fff; }
+            25%  { text-shadow: -3px 0 var(--cta), 3px 0 #0ff; transform: skewX(0.3deg); }
+            50%  { text-shadow: 3px 0 #ff0, -3px 0 var(--cta); transform: skewX(-0.3deg); }
+            75%  { text-shadow: -2px 0 #fff, 2px 0 var(--cta); }
+            100% { text-shadow: 2px 0 var(--cta), -2px 0 #fff; }
+        }
+        #varma-overlay .varma-sub {
+            font-family: 'Roboto', sans-serif;
+            font-size: 11px; letter-spacing: 4px; text-transform: uppercase;
+            color: #444; margin-top: 20px;
+        }
+        #varma-overlay .varma-close-hint {
+            font-family: 'Noto Sans Mono', monospace;
+            font-size: 10px; letter-spacing: 2px; color: #333;
+            margin-top: 40px; text-transform: uppercase;
+            animation: blink 1.4s steps(1) infinite;
+        }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+        /* ====== VARMA LOADER BAR ====== */
+        #varma-loader-bar-wrap {
+            margin-top: 32px;
+            width: clamp(160px, 30vw, 320px);
+            position: relative;
+        }
+        #varma-loader-track {
+            width: 100%;
+            height: 2px;
+            background: rgba(255,255,255,0.08);
+            position: relative;
+            overflow: hidden;
+        }
+        #varma-loader-fill {
+            position: absolute;
+            top: 0; left: 0;
+            height: 100%;
+            width: 0%;
+            background: var(--cta);
+            box-shadow: 0 0 8px var(--cta), 0 0 20px rgba(94,165,0,0.4);
+            transition: width 0.3s cubic-bezier(0.16,1,0.3,1);
+        }
+        /* Looping shimmer while loading */
+        #varma-loader-fill.looping::after {
+            content: '';
+            position: absolute;
+            top: 0; right: -60px;
+            width: 60px; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+            animation: shimmer-pass 0.9s linear infinite;
+        }
+        @keyframes shimmer-pass {
+            0%   { transform: translateX(-60px); }
+            100% { transform: translateX(60px); }
+        }
+        #varma-loader-pct {
+            margin-top: 10px;
+            font-family: 'Noto Sans Mono', monospace;
+            font-size: 9px; letter-spacing: 3px;
+            color: #333; text-align: right;
+            text-transform: uppercase;
+            transition: color 0.3s ease;
+        }
+        #varma-loader-pct.done { color: var(--cta); }
+        body.spray-mode #spray-hint { display: block; }
+
+    </style>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js",
+            "jsm/": "https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/"
+        }
+    }
+    </script>
+</head>
+<body>
+
+    <div class="transition-curtain"></div>
+
+    <!-- HAMBURGER BUTTON -->
+    <button id="nav-hamburger" aria-label="Open navigation" aria-expanded="false">
+        <span></span><span></span><span></span>
+    </button>
+
+    <!-- BACKDROP -->
+    <div id="nav-backdrop"></div>
+
+    <!-- SIDEBAR -->
+    <aside id="nav-sidebar">
+        <div class="ws-tick"></div>
+        <div class="sidebar-head">
+            <a href="index.html" class="sidebar-logo">Y<em>.</em>VARMA</a>
+        </div>
+
+        <!-- WORD SCROLL: "Navigate —" + scrollable words -->
+        <div class="ws-sentence">
+            <h2>Navigate —</h2>
+            <div class="ws-word-col" id="ws-col">
+                <div class="ws-word-spacer"></div>
+                <div class="ws-word-item" data-action="about">
+                    <a href="#" id="ws-about-trigger">About.</a>
+                </div>
+                <div class="ws-word-item" data-href="projects.html">
+                    <a href="projects.html" class="transition-link">Projects.</a>
+                </div>
+                <div class="ws-word-item" data-href="contact.html">
+                    <a href="contact.html" class="transition-link">Contact.</a>
+                </div>
+                <div class="ws-word-item" data-href="https://github.com/Yaswanth-Varma-Sangaraju">
+                    <a href="https://github.com/Yaswanth-Varma-Sangaraju" target="_blank">GitHub.</a>
+                </div>
+                <div class="ws-word-item" data-href="https://www.linkedin.com/in/yaswanthvarma07">
+                    <a href="https://www.linkedin.com/in/yaswanthvarma07" target="_blank">LinkedIn.</a>
+                </div>
+                <div class="ws-word-spacer"></div>
+            </div>
+        </div>
+
+        <div class="sidebar-foot">
+            <a href="https://github.com/Yaswanth-Varma-Sangaraju" target="_blank">GitHub</a>
+            <a href="https://www.linkedin.com/in/yaswanthvarma07" target="_blank">LinkedIn</a>
+            <a href="contact.html" class="transition-link">Contact</a>
+        </div>
+    </aside>
+
+    <div id="scroll-track"></div>
+    <div id="scroll-progress"></div>
+    <div id="about-backdrop"></div>
+    <aside id="about-panel">
+        <button class="close-btn" id="close-about">&#x2715;</button>
+        <p class="panel-eyebrow">About me</p>
+        <h2 class="panel-title">Yaswanth<br>Varma</h2>
+        <p class="scramble-quote" id="about-scramble">initializing...</p>
+        <p class="panel-bio">
+            A <strong>creative developer</strong> crafting digital experiences at the intersection of code and design. 
+            I build things that feel alive — interactive, thoughtful, and made with care.<br><br>
+            Currently exploring <strong>3D interfaces</strong>, generative graphics, and the spaces where engineering meets art.
+        </p>
+        <div class="panel-skills">
+            <span class="skill-tag">Three.js</span><span class="skill-tag">GLSL</span>
+            <span class="skill-tag">GSAP</span><span class="skill-tag">React</span>
+            <span class="skill-tag">WebGL</span><span class="skill-tag">UI/UX</span>
+            <span class="skill-tag">Motion</span>
+        </div>
+        <div class="panel-social">
+            <a href="https://github.com/Yaswanth-Varma-Sangaraju">GitHub</a>
+            <a href="https://www.linkedin.com/in/yaswanthvarma07">LinkedIn</a>
+            <a href="contact.html" class="transition-link">Email</a>
+        </div>
+    </aside>
+    <div class="nav-tooltip" id="nav-tooltip"></div>
+
+
+    <section class="willem-header">
+        <div class="willem-loader">
+            <div class="willem__h1">
+                <div class="willem__h1-start"><span class="willem__letter">V</span><span class="willem__letter">a</span><span class="willem__letter">r</span></div>
+                <div class="willem-loader__box">
+                    <div class="willem-loader__box-inner">
+                        <div class="willem__growing-image">
+                            <div class="willem__growing-image-wrap">
+                                <img class="willem__cover-image-extra is--1" src="delhi.JPG" alt="">
+                                <img class="willem__cover-image-extra is--2" src="wanth.jpg" alt="">
+                                <img class="willem__cover-image-extra is--3" src="img.jpeg" alt="">
+                                <img class="willem__cover-image" src="white1.png" alt="">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="willem__h1-end"><span class="willem__letter">m</span><span class="willem__letter">a.</span></div>
+            </div>
+        </div>
+    </section>
+
+    <div id="custom-cursor"></div>
+    <div id="canvas-container"></div> <div class="scroll-wrapper">
+        <section class="page-one">
+            <div class="interaction-hint" id="hint">
+                <div class="mouse-icon"></div><span>Drag & Scroll</span>
+            </div>
+            
+            <div id="scroll-cta"><div class="arrow-line"></div></div>
+
+            <div class="title">
+                <h3><span>Yaswanth.</span><span>VARMA</span></h3>
+                <ul>
+                    <li><a href="#" id="about-trigger" class="hover-trigger" data-tooltip="Who am I"><span>A</span><span>b</span><span>o</span><span>u</span><span>t</span></a></li>
+                    <li><a href="projects.html" class="hover-trigger transition-link" data-tooltip="My work"><span>P</span><span>r</span><span>o</span><span>j</span><span>e</span><span>c</span><span>t</span><span>s</span></a></li>
+                    <li><a href="contact.html" class="hover-trigger transition-link" data-tooltip="Say hello"><span>C</span><span>o</span><span>n</span><span>t</span><span>a</span><span>c</span><span>t</span></a></li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="page-two">
+            <canvas id="glcanvas"></canvas> <section class="scramble">
+                <div class="scramble-line scramble-line--main">
+                    <p aria-label="Jack"><span aria-hidden="true">J</span><span aria-hidden="true">a</span><span aria-hidden="true">c</span><span aria-hidden="true">k</span></p>
+                    <p aria-label="of"><span aria-hidden="true">o</span><span aria-hidden="true">f</span></p>
+                    <p aria-label="all"><span aria-hidden="true">a</span><span aria-hidden="true">l</span><span aria-hidden="true">l</span></p>
+                    <p aria-label="trades"><span aria-hidden="true">t</span><span aria-hidden="true">r</span><span aria-hidden="true">a</span><span aria-hidden="true">d</span><span aria-hidden="true">e</span><span aria-hidden="true">s</span></p>
+                    <p aria-label="master"><span aria-hidden="true">m</span><span aria-hidden="true">a</span><span aria-hidden="true">s</span><span aria-hidden="true">t</span><span aria-hidden="true">e</span><span aria-hidden="true">r</span></p>
+                    <p aria-label="of"><span aria-hidden="true">o</span><span aria-hidden="true">f</span></p>
+                    <p aria-label="none"><span aria-hidden="true">n</span><span aria-hidden="true">o</span><span aria-hidden="true">n</span><span aria-hidden="true">e</span></p>
+                </div>
+                <div class="scramble-line scramble-line--sub">
+                    <p aria-label="but"><span aria-hidden="true">b</span><span aria-hidden="true">u</span><span aria-hidden="true">t</span></p>
+                    <p aria-label="often"><span aria-hidden="true">o</span><span aria-hidden="true">f</span><span aria-hidden="true">t</span><span aria-hidden="true">e</span><span aria-hidden="true">n</span></p>
+                    <p aria-label="times"><span aria-hidden="true">t</span><span aria-hidden="true">i</span><span aria-hidden="true">m</span><span aria-hidden="true">e</span><span aria-hidden="true">s</span></p>
+                    <p aria-label="better"><span aria-hidden="true">b</span><span aria-hidden="true">e</span><span aria-hidden="true">t</span><span aria-hidden="true">t</span><span aria-hidden="true">e</span><span aria-hidden="true">r</span></p>
+                    <p aria-label="than"><span aria-hidden="true">t</span><span aria-hidden="true">h</span><span aria-hidden="true">a</span><span aria-hidden="true">n</span></p>
+                    <p aria-label="the"><span aria-hidden="true">t</span><span aria-hidden="true">h</span><span aria-hidden="true">e</span></p>
+                    <p aria-label="master"><span aria-hidden="true">m</span><span aria-hidden="true">a</span><span aria-hidden="true">s</span><span aria-hidden="true">t</span><span aria-hidden="true">e</span><span aria-hidden="true">r</span></p>
+                    <p aria-label="of"><span aria-hidden="true">o</span><span aria-hidden="true">f</span></p>
+                    <p aria-label="one"><span aria-hidden="true">o</span><span aria-hidden="true">n</span><span aria-hidden="true">e</span></p>
+                </div>
+            </section>
+
+            <div class="stats-row">
+                <div class="stat-item"><span class="stat-number" data-count="4">0</span><span class="stat-label">Projects</span></div>
+                <div class="stat-item"><span class="stat-number" data-count="2">0</span><span class="stat-label">Years Exp.</span></div>
+                <div class="stat-item"><span class="stat-number" data-count="7">0</span><span class="stat-label">Technologies</span></div>
+            </div>
+            <div class="page-two-bottom">
+                <span class="page-two-label">Creative Developer</span>
+                <span class="page-two-year">&#169; 2025</span>
+            </div>
+        </section>
+    </div>
+
+    <div class="badge-container">
+        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <defs><clipPath id="blobClip"><path d="M43.1,-68.5C56.2,-58.6,67.5,-47.3,72.3,-33.9C77.2,-20.5,75.5,-4.9,74.2,11.3C72.9,27.6,71.9,44.5,63.8,57.2C55.7,69.8,40.6,78.2,25.5,79.2C10.4,80.1,-4.7,73.6,-20.9,69.6C-37.1,65.5,-54.5,63.9,-66,54.8C-77.5,45.8,-83.2,29.3,-85.7,12.3C-88.3,-4.8,-87.7,-22.3,-79.6,-34.8C-71.5,-47.3,-55.8,-54.9,-41.3,-64.2C-26.7,-73.6,-13.4,-84.7,0.8,-86C15,-87.2,29.9,-78.5,43.1,-68.5Z" transform="translate(100 100)"/></clipPath></defs>
+            <image href="myself.jpg" width="200" height="200" preserveAspectRatio="xMidYMid slice" clip-path="url(#blobClip)" style="filter: grayscale(100%); opacity: 0.8;" />
+            <path id="textPathRing" d="M43.1,-68.5C56.2,-58.6,67.5,-47.3,72.3,-33.9C77.2,-20.5,75.5,-4.9,74.2,11.3C72.9,27.6,71.9,44.5,63.8,57.2C55.7,69.8,40.6,78.2,25.5,79.2C10.4,80.1,-4.7,73.6,-20.9,69.6C-37.1,65.5,-54.5,63.9,-66,54.8C-77.5,45.8,-83.2,29.3,-85.7,12.3C-88.3,-4.8,-87.7,-22.3,-79.6,-34.8C-71.5,-47.3,-55.8,-54.9,-41.3,-64.2C-26.7,-73.6,-13.4,-84.7,0.8,-86C15,-87.2,29.9,-78.5,43.1,-68.5Z" transform="translate(100 100)" fill="none" />
+            <text class="text-content"><textPath href="#textPathRing" startOffset="0%">❤ MADE WITH LOVE ❤ MADE WITH LOVE ❤ MADE WITH LOVE ❤ MADE WITH LOVE ❤ MADE WITH LOVE ❤ MADE WITH LOVE ❤ MADE WITH LOVE ❤ MADE WITH LOVE ❤ MADE WITH LOVE ❤ MADE WITH LOVE ❤ MADE WITH LOVE ❤ MADE WITH LOVE ❤ MADE WITH LOVE ❤ MADE WITH LOVE ❤ MADE WITH LOVE <animate attributeName="startOffset" from="0%" to="-100%" dur="30s" repeatCount="indefinite" /></textPath></text>
+        </svg>
+    </div>
+
+    <script id="vertex-shader" type="x-shader/x-vertex">
+        attribute vec2 a_position;
+        void main() {
+            gl_Position = vec4(a_position, 0.0, 1.0);
+        }
+    </script>
+    <script id="fragment-shader" type="x-shader/x-fragment">
+        #ifdef GL_ES
+        precision highp float;
+        #endif
+        uniform vec2 u_resolution;
+        uniform vec2 u_mouse;
+        uniform float u_time;
+        vec3 palette_fire(float t, float factor) {
+            vec3 a = vec3(0.5, 0.1, 0.0);
+            vec3 b = vec3(0.6, 0.3, 0.1);
+            vec3 c = vec3(1.0, 1.0, 0.0);
+            vec3 d = vec3(0.8, 0.7, 0.2);
+            a += 0.1 * sin(vec3(0.1, 0.2, 0.3) * factor);
+            b += 0.2 * cos(vec3(0.2, 0.3, 0.1) * factor);
+            return a + b * cos(6.28318 * (c * t + d));
+        }
+        void main() {
+            vec2 st = (gl_FragCoord.xy / u_resolution.xy) * 2.0 - 1.0;
+            st.x *= u_resolution.x/u_resolution.y;
+            vec3 color = vec3(0.0);
+            
+            // Mouse Interaction Logic
+            vec2 mouse_st = vec2(u_mouse.x, u_resolution.y - u_mouse.y) / u_resolution.xy;
+            mouse_st = (mouse_st * 2.0 - 1.0) * vec2(1.0, -1.0);
+            mouse_st.x *= u_resolution.x / u_resolution.y;
+            vec2 mouse_vec = st - mouse_st;
+            float mouse_dist = length(mouse_vec);
+            float mouse_push = smoothstep(0.7, 0.0, mouse_dist) * 0.5;
+            
+            // Only push if mouse is active (simple check)
+            if (u_mouse.x > 0.0) {
+                st += normalize(mouse_vec) * mouse_push;
+            }
+            
+            float R_global = length(st);
+            float twist = 0.5 * sin(R_global * 3.0 - u_time * 0.4);
+            st *= mat2(cos(twist), sin(twist), -sin(twist), cos(twist));
+            
+            for (float i = 1.0; i < 6.0; i++) {
+                vec2 st0 = st;
+                float sgn = 1.0 - 2.0 * mod(i, 2.0);
+                float t = u_time * 0.02 - float(i);
+                st0 *= mat2(cos(t), sin(t), -sin(t), cos(t));
+                float R = length(st0);
+                float d = R * i;
+                float angle = atan(st0.y, st0.x);
+                float num_arms = 4.0 + 3.0 * sin(u_time * 0.1 + i);
+                float angle_warped = angle * num_arms;
+                float dist_warp_factor = 1.0 + 0.3 * sin(angle * 12.0 + u_time * 0.5 - i);
+                float d_warped = d * dist_warp_factor;
+                vec3 pal = palette_fire(-exp((length(d_warped) * -0.9)), abs(d_warped) * 0.4);
+                float radial = exp(-R);
+                radial *= smoothstep(1.2, 0.5, R);
+                pal *= radial;
+                float phase = -(d_warped + sgn * angle_warped) + u_time * 0.3;
+                float v = sin(phase);
+                v = max(abs(v), 0.01);
+                float w = pow(0.02 / v, 0.8);
+                color += pal * w;
+            }
+            gl_FragColor = vec4(color, 1.0);
+        }
+    </script>
+
+    <script>
+        // GLOBAL STATE
+        let currentCursorPos = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+        let isMouseActive = true;
+
+        // --- 1. LOADER & GSAP ---
+        function initWillemLoadingAnimation() {
+            const tl = gsap.timeline({ defaults: { ease: "expo.inOut" } });
+            const loader = document.querySelector(".willem-header");
+            const letters = document.querySelectorAll(".willem__letter");
+            const box = document.querySelectorAll(".willem-loader__box");
+            const imageBox = document.querySelectorAll(".willem__growing-image");
+            const startTxt = document.querySelectorAll(".willem__h1-start");
+            const endTxt = document.querySelectorAll(".willem__h1-end");
+            const extraImages = document.querySelectorAll(".willem__cover-image-extra");
+
+            if (letters) tl.from(letters, { yPercent: 100, stagger: 0.025, duration: 1.25 });
+            if (box.length) tl.fromTo(box, { width: "0em" }, { width: "1em", duration: 1.25 }, "< 1.25");
+            if (imageBox.length) tl.fromTo(imageBox, { width: "0%" }, { width: "100%", duration: 1.25 }, "<");
+            if (startTxt.length) tl.fromTo(startTxt, { x: "0em" }, { x: "-0.05em", duration: 1.25 }, "<");
+            if (endTxt.length) tl.fromTo(endTxt, { x: "0em" }, { x: "0.05em", duration: 1.25 }, "<");
+            if (extraImages.length) tl.fromTo(extraImages, { opacity: 1 }, { opacity: 0, duration: 0.05, ease: "none", stagger: 0.5 }, "-=0.05");
+            if (imageBox.length && box.length) {
+                tl.to(imageBox, { width: "100vw", height: "100vh", duration: 1.5 }, "< 1.25");
+                tl.to(box, { width: "100vw", duration: 1.5 }, "<");
+            }
+            tl.to(".willem-header", { opacity: 0, duration: 1, onComplete: () => { loader.style.display = "none"; } });
+        }
+
+        // --- 2. SCRAMBLE TEXT ---
+        function initScramble() {
+            gsap.registerPlugin(ScrollTrigger);
+            gsap.from(".scramble span", {
+                scrollTrigger: { trigger: ".page-two", start: "top center", end: "center 45%", scrub: 1 },
+                y: (i) => Math.sin(i) * 150 + (Math.random() - 0.5) * 100,
+                x: (i) => (Math.random() - 0.5) * 100,
+                z: (i) => Math.random() * 300,
+                rotation: (i) => Math.random() * 90 - 45,
+                opacity: 0, duration: 1, ease: "power2.out", stagger: 0.02
+            });
+        }
+
+        // --- 3. CURSOR & INTERACTION ---
+        function initCursor() {
+            const cursor = document.getElementById('custom-cursor');
+
+            // Spring physics state
+            const mouse  = { x: window.innerWidth / 2,  y: window.innerHeight / 2 };
+            const pos    = { x: mouse.x, y: mouse.y };
+            const vel    = { x: 0, y: 0 };
+
+            // Spring constants
+            const STIFFNESS  = 0.18;   // how strongly it chases the mouse
+            const DAMPING    = 0.72;   // how quickly oscillation dies (< 1 = bouncy)
+
+            // Target scale modifiers (hover / click)
+            let scaleTarget = 1;
+            let isHovering  = false;
+            let isClicking  = false;
+
+            document.addEventListener('mousemove', (e) => {
+                isMouseActive   = true;
+                mouse.x         = e.clientX;
+                mouse.y         = e.clientY;
+                currentCursorPos.x = e.clientX;
+                currentCursorPos.y = e.clientY;
+            });
+            document.addEventListener('mouseleave', () => isMouseActive = false);
+            document.addEventListener('mouseenter', () => isMouseActive = true);
+            document.addEventListener('mousedown', () => { isClicking = true;  document.body.classList.add('clicking'); });
+            document.addEventListener('mouseup',   () => { isClicking = false; document.body.classList.remove('clicking'); });
+
+            const triggers = document.querySelectorAll('a, .badge-container');
+            triggers.forEach(trigger => {
+                trigger.addEventListener('mouseenter', () => { isHovering = true;  document.body.classList.add('hovering'); });
+                trigger.addEventListener('mouseleave', () => { isHovering = false; document.body.classList.remove('hovering'); });
+            });
+
+            // Physics + render loop
+            let idleTime = 0;
+            function loop() {
+                // --- Idle drift when mouse inactive ---
+                let targetX = mouse.x;
+                let targetY = mouse.y;
+
+                if (!isMouseActive && window.innerWidth > 768) {
+                    idleTime = performance.now() * 0.001;
+                    const cx = window.innerWidth  / 2;
+                    const cy = window.innerHeight / 2;
+                    targetX = cx + Math.sin(idleTime * 1.7) * 200 + Math.cos(idleTime * 0.5) * 100;
+                    targetY = cy + Math.cos(idleTime * 1.3) * 100 + Math.sin(idleTime * 0.9) * 50;
+                    currentCursorPos.x = targetX;
+                    currentCursorPos.y = targetY;
+                }
+
+                // --- Spring force ---
+                const fx = (targetX - pos.x) * STIFFNESS;
+                const fy = (targetY - pos.y) * STIFFNESS;
+
+                vel.x = vel.x * DAMPING + fx;
+                vel.y = vel.y * DAMPING + fy;
+
+                pos.x += vel.x;
+                pos.y += vel.y;
+
+                // --- Squash & stretch from velocity ---
+                const speed  = Math.sqrt(vel.x * vel.x + vel.y * vel.y);
+                const angle  = Math.atan2(vel.y, vel.x) * (180 / Math.PI);
+
+                // Only deform above a speed threshold — feels natural, not twitchy
+                const SPEED_THRESHOLD = 3.5;   // px/frame below this = perfect circle
+                const SQUASH_RANGE    = 12.0;  // speed range over which deformation ramps up
+                const deform = Math.max(0, (speed - SPEED_THRESHOLD) / SQUASH_RANGE);
+                const stretch = Math.min(deform, 1.0);
+
+                // Scale target: hover = 2.5×, click = 0.75×, normal = 1×
+                if      (isClicking) scaleTarget = 0.75;
+                else if (isHovering) scaleTarget = 2.4;
+                else                 scaleTarget = 1.0;
+
+                const baseScale = scaleTarget;
+                // Elongate along movement direction, squash perpendicular (volume-preserving)
+                const sx = baseScale * (1 + stretch * 0.55);
+                const sy = baseScale / (1 + stretch * 0.35);
+
+                cursor.style.transform =
+                    `translate(${pos.x - 10}px, ${pos.y - 10}px) ` +
+                    `rotate(${angle}deg) ` +
+                    `scale(${sx}, ${sy})`;
+
+                requestAnimationFrame(loop);
+            }
+            loop();
+        }
+
+        // --- 4. NAVIGATION TRANSITION ---
+        function initTransition() {
+            const curtain = document.querySelector(".transition-curtain");
+            const transLinks = document.querySelectorAll('.transition-link');
+            transLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    const target = link.getAttribute('href');
+                    if (!target || target.startsWith('#')) return;
+                    e.preventDefault();
+                    gsap.to(curtain, {
+                        scaleY: 1, duration: 0.8, ease: "power4.inOut",
+                        onComplete: () => { setTimeout(() => { window.location.href = target; }, 500); }
+                    });
+                });
+            });
+        }
+
+        // --- 5. WEBGL SPIRAL SHADER (PAGE 2) ---
+        function initSpiral() {
+            const canvas = document.getElementById('glcanvas');
+            const gl = canvas.getContext('webgl');
+            if (!gl) return;
+
+            const createShader = (gl, type, source) => {
+                const shader = gl.createShader(type);
+                gl.shaderSource(shader, source);
+                gl.compileShader(shader);
+                if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                    console.error('Shader compile error:', gl.getShaderInfoLog(shader));
+                    gl.deleteShader(shader);
+                    return null;
+                }
+                return shader;
+            };
+
+            const program = gl.createProgram();
+            gl.attachShader(program, createShader(gl, gl.VERTEX_SHADER, document.getElementById('vertex-shader').textContent));
+            gl.attachShader(program, createShader(gl, gl.FRAGMENT_SHADER, document.getElementById('fragment-shader').textContent));
+            gl.linkProgram(program);
+
+            const buffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+
+            const posLoc = gl.getAttribLocation(program, 'a_position');
+            gl.enableVertexAttribArray(posLoc);
+            gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
+            gl.useProgram(program);
+
+            const resLoc = gl.getUniformLocation(program, 'u_resolution');
+            const timeLoc = gl.getUniformLocation(program, 'u_time');
+            const mouseLoc = gl.getUniformLocation(program, 'u_mouse');
+
+            let dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+            const resize = () => {
+                const parent = canvas.parentElement;
+                canvas.width = parent.clientWidth * dpr;
+                canvas.height = parent.clientHeight * dpr;
+                gl.viewport(0, 0, canvas.width, canvas.height);
+            };
+            window.addEventListener('resize', resize);
+            resize();
+
+            const render = (time) => {
+                // Ensure the canvas stays sized correctly if window changes
+                gl.uniform2f(resLoc, canvas.width, canvas.height);
+                gl.uniform1f(timeLoc, time * 0.001);
+                
+                // Map global mouse coordinates to shader coordinates
+                // Note: Shader expects (0,0) at bottom left usually, but clientY is top-left
+                // We pass raw pixel coords, shader handles mapping
+                gl.uniform2f(mouseLoc, currentCursorPos.x * dpr, currentCursorPos.y * dpr);
+                
+                gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+                requestAnimationFrame(render);
+            };
+            requestAnimationFrame(render);
+        }
+
+        // --- 6. LINK HOVER EFFECTS ---
+        function initLinkHover() {
+            const links = document.querySelectorAll('ul li a');
+            links.forEach(link => {
+                link.addEventListener('mousemove', (e) => {
+                    if (window.innerWidth <= 768) return; 
+                    const rect = link.getBoundingClientRect();
+                    const centerY = rect.top + rect.height / 2;
+                    const offset = (centerY - e.clientY) / (rect.height / 2); 
+                    link.style.setProperty('--_s', offset.toFixed(3));
+                    link.style.transition = 'none'; 
+                });
+                link.addEventListener('mouseleave', () => {
+                    if (window.innerWidth <= 768) return;
+                    link.style.setProperty('--_s', '0');
+                    link.style.transition = ''; 
+                });
+            });
+        }
+
+        // INITIALIZE ALL
+        document.addEventListener('DOMContentLoaded', () => {
+            const hasVisited = sessionStorage.getItem('portfolio_visited');
+
+            if (!hasVisited) {
+                // First visit: play loader, then mark as visited
+                sessionStorage.setItem('portfolio_visited', '1');
+                initWillemLoadingAnimation();
+            } else {
+                // Return visit: skip loader instantly
+                const loader = document.querySelector('.willem-header');
+                if (loader) loader.style.display = 'none';
+            }
+
+            initScramble();
+            initCursor();
+            initTransition();
+            initLinkHover();
+            initSpiral();
+        });
+
+    </script>
+
+    <script type="module">
+        import * as THREE from "three";
+        import { OrbitControls } from "jsm/controls/OrbitControls.js";
+        import { OBJLoader } from "jsm/loaders/OBJLoader.js";
+
+        // --- THREE.JS SCENE ---
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, w / h, 0.1, 1000);
+        updateCameraPosition();
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setSize(w, h);
+        renderer.shadowMap.enabled = true;
+        renderer.setClearColor(0xffffff, 1); 
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.enableZoom = false;
+        controls.enablePan = false;
+        controls.minPolarAngle = Math.PI / 3;
+        controls.maxPolarAngle = Math.PI / 2.2;
+
+        const hint = document.getElementById('hint');
+        controls.addEventListener('start', () => { if(hint) hint.style.opacity = '0'; });
+        controls.addEventListener('end', () => { if(hint) hint.style.opacity = '1'; });
+
+        // --- FLOOR SHADER ---
+        const vertexShader = `varying vec2 vUv; varying vec3 vNormal; varying vec3 vPosition; void main() { vUv = uv; vNormal = normalize(normalMatrix * normal); vPosition = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
+        const fragmentShader = `
+          uniform float uTime; uniform float uCircleSpacing; uniform float uLineWidth; uniform float uSpeed; uniform float uFadeEdge; uniform vec3 uCameraPosition;
+          varying vec2 vUv; varying vec3 vNormal; varying vec3 vPosition;
+          void main() {
+            vec2 center = vec2(0.5, 0.5); float dist = distance(vUv, center);
+            float animatedDist = dist - uTime * uSpeed; float circle = mod(animatedDist, uCircleSpacing);
+            float distFromEdge = min(circle, uCircleSpacing - circle);
+            float aaWidth = length(vec2(dFdx(animatedDist), dFdy(animatedDist))) * 2.0;
+            float lineAlpha = 1.0 - smoothstep(uLineWidth - aaWidth, uLineWidth + aaWidth, distFromEdge);
+            vec3 baseColor = mix(vec3(0.2), vec3(1.0), 1.0 - lineAlpha); 
+            vec3 normal = normalize(vNormal); 
+            vec3 viewDir = normalize(uCameraPosition - vPosition); 
+            vec3 lightDir = normalize(vec3(5.0, 10.0, 5.0));
+            float NdotL = max(dot(normal, lightDir), 0.0);
+            vec3 diffuse = baseColor * (0.5 + 0.5 * NdotL);
+            vec3 reflectDir = reflect(-lightDir, normal);
+            float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0); 
+            float fresnel = pow(1.0 - max(dot(normal, viewDir), 0.0), 3.0);
+            vec3 finalColor = diffuse + (vec3(0.6) * spec) + (vec3(0.2) * fresnel);
+            gl_FragColor = vec4(finalColor, 1.0 - smoothstep(0.5 - uFadeEdge, 0.5, dist));
+          }
+        `;
+        const floorMaterial = new THREE.ShaderMaterial({
+            vertexShader, fragmentShader,
+            uniforms: { uTime: { value: 0.0 }, uCircleSpacing: { value: 0.06 }, uLineWidth: { value: 0.02 }, uSpeed: { value: 0.01 }, uFadeEdge: { value: 0.2 }, uCameraPosition: { value: new THREE.Vector3() }, },
+            transparent: true, side: THREE.DoubleSide
+        });
+        const floor = new THREE.Mesh(new THREE.CircleGeometry(20, 200), floorMaterial);
+        floor.rotation.x = -Math.PI / 2; floor.position.y = -1;
+        scene.add(floor);
+
+        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+        dirLight.position.set(5, 10, 5);
+        scene.add(dirLight);
+
+        const loader = new OBJLoader();
+        loader.load("https://cdn.jsdelivr.net/gh/danielyl123/person/person.obj", (object) => {
+            object.traverse(c => {
+                if (c.isMesh) c.material = new THREE.MeshStandardMaterial({ color: 0x888888, roughness: 0.7, metalness: 0.3 });
+            });
+            const box = new THREE.Box3().setFromObject(object);
+            const size = new THREE.Vector3(); box.getSize(size);
+            const scale = 4 / Math.max(size.x, size.y, size.z);
+            object.scale.set(scale, scale, scale);
+            const scaledBox = new THREE.Box3().setFromObject(object);
+            object.position.y = -1 - scaledBox.min.y;
+            object.rotation.y = Math.PI / 3;
+            scene.add(object);
+        });
+
+        function updateCameraPosition() {
+            if (window.innerWidth <= 768) {
+                camera.position.set(-7, -2, 16);
+            } else {
+                camera.position.set(-7, -5, 11);
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            floorMaterial.uniforms.uTime.value += 0.016; 
+            const camPos = new THREE.Vector3();
+            camera.getWorldPosition(camPos);
+            floorMaterial.uniforms.uCameraPosition.value.copy(camPos);
+            renderer.render(scene, camera);
+            controls.update();
+        }
+        animate();
+
+        window.addEventListener("resize", () => {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            renderer.setSize(width, height);
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            updateCameraPosition();
+        });
+    </script>
+
+    <script>
+    // NEW MICRO-INTERACTION SCRIPTS
+    document.addEventListener('DOMContentLoaded', () => {
+
+        // Scroll progress bar (vertical, right side)
+        const bar = document.getElementById('scroll-progress');
+        window.addEventListener('scroll', () => {
+            const max = document.documentElement.scrollHeight - window.innerHeight;
+            bar.style.height = (max > 0 ? (window.scrollY / max) * 100 : 0) + '%';
+        }, { passive: true });
+
+        // Status indicator - show after loader hides
+        setTimeout(() => {
+            const si = document.getElementById('status-indicator');
+            if (si) si.classList.add('visible');
+        }, 4500);
+
+        // About panel
+        const panel = document.getElementById('about-panel');
+        const backdrop = document.getElementById('about-backdrop');
+        const trigger = document.getElementById('about-trigger');
+        const closeBtn = document.getElementById('close-about');
+
+        function openPanel() {
+            panel.classList.add('open');
+            backdrop.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            document.body.classList.add('panel-open');
+        }
+        function closePanel() {
+            panel.classList.remove('open');
+            backdrop.classList.remove('active');
+            document.body.style.overflow = '';
+            document.body.classList.remove('panel-open');
+        }
+        trigger && trigger.addEventListener('click', e => { e.preventDefault(); openPanel(); });
+        closeBtn && closeBtn.addEventListener('click', closePanel);
+        backdrop && backdrop.addEventListener('click', closePanel);
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closePanel(); });
+
+        // Tooltips
+        const tooltip = document.getElementById('nav-tooltip');
+        document.querySelectorAll('[data-tooltip]').forEach(el => {
+            el.addEventListener('mouseenter', () => { tooltip.textContent = el.dataset.tooltip; tooltip.classList.add('show'); });
+            el.addEventListener('mousemove', e => { tooltip.style.left = (e.clientX + 16) + 'px'; tooltip.style.top = (e.clientY - 30) + 'px'; });
+            el.addEventListener('mouseleave', () => tooltip.classList.remove('show'));
+        });
+
+        // Click ripple
+        document.addEventListener('click', e => {
+            if (window.innerWidth <= 768) return;
+            const r = document.createElement('div');
+            r.classList.add('ripple');
+            const s = 80;
+            r.style.cssText = `width:${s}px;height:${s}px;left:${e.clientX - s/2}px;top:${e.clientY - s/2}px;`;
+            document.body.appendChild(r);
+            setTimeout(() => r.remove(), 700);
+        });
+
+        // Count-up stats
+        const stats = document.querySelectorAll('.stat-number[data-count]');
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting) return;
+                const el = entry.target;
+                const target = parseInt(el.dataset.count);
+                let n = 0;
+                const step = () => { n++; el.textContent = n; if (n < target) requestAnimationFrame(step); };
+                requestAnimationFrame(step);
+                observer.unobserve(el);
+            });
+        }, { threshold: 0.5 });
+        stats.forEach(s => observer.observe(s));
+
+        // Title glitch on hover
+        const h3 = document.querySelector('.title h3');
+        if (h3 && window.gsap) {
+            h3.addEventListener('mouseenter', () => {
+                h3.querySelectorAll('span').forEach((s, i) => {
+                    gsap.fromTo(s, { skewX: 0 }, { skewX: i === 0 ? 5 : -3, duration: 0.1, yoyo: true, repeat: 5, ease: 'power1.inOut' });
+                });
+            });
+        }
+    });
+    </script>
+    <!-- VARMA OVERLAY -->
+    <div id="varma-overlay">
+        <div id="varma-overlay-inner">
+            <div class="varma-title">VARMA</div>
+            <div class="varma-sub">Yaswanth Varma — Creative Developer</div>
+            <div id="varma-loader-bar-wrap">
+                <div id="varma-loader-track">
+                    <div id="varma-loader-fill" class="looping"></div>
+                </div>
+                <div id="varma-loader-pct">0%</div>
+            </div>
+            <div class="varma-close-hint" id="varma-close-hint" style="display:none;">[ click anywhere to close ]</div>
+        </div>
+    </div>
+
+    <!-- LOCATION BAR -->
+    <div id="location-bar" style="position:fixed;bottom:0;left:0;right:0;height:36px;background:#000;border-top:1px solid #111;display:flex;align-items:center;padding:0 28px;gap:40px;z-index:9997;font-family:'Noto Sans Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#555;pointer-events:none;">
+        <div style="width:6px;height:6px;background:#5ea500;border-radius:50%;animation:blink-dot 2s ease-in-out infinite;flex-shrink:0;"></div>
+        <span class="lb-city">—</span>
+        <span class="lb-time">—</span>
+        <span class="lb-tz">—</span>
+        <span class="lb-coords" style="margin-left:auto;color:#444;">—</span>
+    </div>
+    <style>@keyframes blink-dot{0%,100%{opacity:1}50%{opacity:0.3}}</style>
+
+
+    </style>
+
+    <script>
+    /* ============================================================
+       1. TEXT SCRAMBLE EFFECT
+    ============================================================ */
+    class TextScramble {
+        constructor(el) {
+            this.el = el;
+            this.chars = '!<>-_\\/[]{}—=+*^?#@ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+            this.update = this.update.bind(this);
+        }
+        setText(newText) {
+            const oldText = this.el.innerText;
+            const length = Math.max(oldText.length, newText.length);
+            const promise = new Promise(resolve => this.resolve = resolve);
+            this.queue = [];
+            for (let i = 0; i < length; i++) {
+                const from = oldText[i] || '';
+                const to = newText[i] || '';
+                const start = Math.floor(Math.random() * 20);
+                const end = start + Math.floor(Math.random() * 20);
+                this.queue.push({ from, to, start, end });
+            }
+            cancelAnimationFrame(this.frameRequest);
+            this.frame = 0;
+            this.update();
+            return promise;
+        }
+        update() {
+            let output = '';
+            let complete = 0;
+            for (let i = 0; i < this.queue.length; i++) {
+                let { from, to, start, end, char } = this.queue[i];
+                if (this.frame >= end) { complete++; output += to; }
+                else if (this.frame >= start) {
+                    if (!char || Math.random() < 0.28) { char = this.randomChar(); this.queue[i].char = char; }
+                    output += char;
+                } else { output += from; }
+            }
+            this.el.innerText = output;
+            if (complete === this.queue.length) { this.resolve(); }
+            else { this.frameRequest = requestAnimationFrame(this.update); this.frame++; }
+        }
+        randomChar() { return this.chars[Math.floor(Math.random() * this.chars.length)]; }
+    }
+
+    const aboutPhrases = [
+        'Code is my canvas.',
+        'Design meets engineering.',
+        'Building the web of tomorrow.',
+        'Motion. Depth. Interaction.',
+        'From idea to interface.',
+        'Always learning. Always building.',
+    ];
+    const scrambleEl = document.getElementById('about-scramble');
+    let scrambleFX, scrambleInterval, phraseIndex = 0;
+    if (scrambleEl) {
+        scrambleFX = new TextScramble(scrambleEl);
+        const nextPhrase = () => { scrambleFX.setText(aboutPhrases[phraseIndex]).then(() => { phraseIndex = (phraseIndex + 1) % aboutPhrases.length; }); };
+        document.getElementById('about-trigger')?.addEventListener('click', () => { nextPhrase(); scrambleInterval = setInterval(nextPhrase, 3000); });
+        document.getElementById('close-about')?.addEventListener('click', () => clearInterval(scrambleInterval));
+        document.getElementById('about-backdrop')?.addEventListener('click', () => clearInterval(scrambleInterval));
+    }
+
+    /* ============================================================
+       2. VARMA OVERLAY — opens on stickman click (spray mode OFF)
+    ============================================================ */
+    const varmaOverlay = document.getElementById('varma-overlay');
+    varmaOverlay?.addEventListener('click', () => {
+        if (varmaOverlay.classList.contains('loaded')) {
+            varmaOverlay.classList.remove('active');
+        }
+    });
+
+    /* ── VARMA LOADER BAR — tracks all in-page images ── */
+    (function() {
+        const fill  = document.getElementById('varma-loader-fill');
+        const pct   = document.getElementById('varma-loader-pct');
+        const hint  = document.getElementById('varma-close-hint');
+        const imgs  = Array.from(document.images);
+        if (!imgs.length) { finishLoader(); return; }
+        let loaded = 0;
+        const total = imgs.length;
+        function tick() {
+            const progress = Math.round((loaded / total) * 100);
+            fill.style.width = progress + '%';
+            pct.textContent  = progress + '%';
+        }
+        function finishLoader() {
+            fill.style.width = '100%';
+            pct.textContent  = '100%';
+            pct.classList.add('done');
+            fill.classList.remove('looping');
+            setTimeout(() => {
+                if (hint) hint.style.display = 'block';
+                varmaOverlay?.classList.add('loaded');
+            }, 400);
+        }
+        function onLoad() {
+            loaded++;
+            tick();
+            if (loaded >= total) finishLoader();
+        }
+        imgs.forEach(img => {
+            if (img.complete) { loaded++; }
+            else {
+                img.addEventListener('load',  onLoad, { once: true });
+                img.addEventListener('error', onLoad, { once: true });
+            }
+        });
+        if (loaded >= total) { finishLoader(); } else { tick(); }
+    })();
+
+
+    /* ── LOCATION BAR ── */
+    (function() {
+        const bar = document.getElementById('location-bar');
+        if (!bar) return;
+        const CITY = 'HYDERABAD, IN'; const LAT = '17.3850° N'; const LNG = '78.4867° E';
+        function pad(n) { return String(n).padStart(2,'0'); }
+        function update() {
+            const now = new Date();
+            const utc = now.getTime() + now.getTimezoneOffset()*60000;
+            const ist = new Date(utc + 5.5*3600000);
+            const h = ist.getHours(), m = pad(ist.getMinutes());
+            const ampm = h>=12?'PM':'AM'; const h12 = h%12||12;
+            bar.querySelector('.lb-time').textContent = `${h12}:${m} ${ampm}`;
+        }
+        update(); setInterval(update, 30000);
+        bar.querySelector('.lb-city').textContent = CITY;
+        bar.querySelector('.lb-tz').textContent = 'GMT+5:30';
+        bar.querySelector('.lb-coords').textContent = `${LAT}, ${LNG}`;
+    })();
+    </script>
+
+    <script>
+    /* ── SIDEBAR NAV ── */
+    (function() {
+        const hamburger  = document.getElementById('nav-hamburger');
+        const sidebar    = document.getElementById('nav-sidebar');
+        const backdrop   = document.getElementById('nav-backdrop');
+        const col        = document.getElementById('ws-col');
+        const items      = col ? [...col.querySelectorAll('.ws-word-item')] : [];
+
+        // ---- open / close ----
+        function openNav() {
+            sidebar.classList.add('open');
+            backdrop.classList.add('active');
+            hamburger.classList.add('open');
+            hamburger.setAttribute('aria-expanded', 'true');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeNav() {
+            sidebar.classList.remove('open');
+            backdrop.classList.remove('active');
+            hamburger.classList.remove('open');
+            hamburger.setAttribute('aria-expanded', 'false');
+            document.body.style.overflow = '';
+        }
+
+        hamburger.addEventListener('click', () => {
+            sidebar.classList.contains('open') ? closeNav() : openNav();
+        });
+        backdrop.addEventListener('click', closeNav);
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeNav(); });
+
+        // ---- wire about trigger ----
+        document.getElementById('ws-about-trigger')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeNav();
+            setTimeout(() => document.getElementById('about-trigger')?.click(), 300);
+        });
+
+        // ---- word scroll active highlight ----
+        if (col) {
+            // set --count and --i for colour steps (mirrors the spec)
+            col.style.setProperty('--count', items.length);
+            items.forEach((item, i) => item.style.setProperty('--i', i));
+
+            function updateActive() {
+                const center = col.scrollTop + col.clientHeight / 2;
+                let closest = 0, closestDist = Infinity;
+                items.forEach((item, i) => {
+                    const mid = item.offsetTop + item.offsetHeight / 2;
+                    const d   = Math.abs(center - mid);
+                    item.classList.remove('ws-active');
+                    if (d < closestDist) { closestDist = d; closest = i; }
+                });
+                items[closest].classList.add('ws-active');
+            }
+            col.addEventListener('scroll', updateActive, { passive: true });
+            requestAnimationFrame(updateActive);
+
+            // scroll to first item on open
+            hamburger.addEventListener('click', () => {
+                if (sidebar.classList.contains('open')) {
+                    requestAnimationFrame(updateActive);
+                }
+            });
+        }
+    })();
+    </script>
+
+</body>
+</html>
